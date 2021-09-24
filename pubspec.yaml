@@ -29,6 +29,26 @@ flutter:
   # Enable generation of localized Strings from arb files.
   generate: true
 
+  fonts:
+    - family: Chalkduster
+      fonts:
+        - asset: fonts/Chalkduster.ttf
+    - family: Copperplate
+      fonts:
+        - asset: fonts/Copperplate_regular.ttf
+        - asset: fonts/Copperplate_bold.ttf
+          weight: 900
+        - asset: fonts/Copperplate_light.ttf
+          weight: 100
+    - family: Noteworthy
+      fonts:
+        - asset: fonts/Noteworthy_regular.ttf
+        - asset: fonts/Noteworthy_bold.ttf
+          weight: 900
+    - family: Papyrus
+      fonts:
+        - asset: fonts/Papyrus.ttf
+
   assets:
     # Add assets from the images directory to the application.
     - assets/images/

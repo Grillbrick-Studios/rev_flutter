@@ -6,7 +6,6 @@ import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
-import 'settings/fonts.dart' as fonts;
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -19,6 +18,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    textTheme() => TextTheme(
+          headline1: settingsController.textStyle.copyWith(
+            fontSize: 36,
+          ),
+          headline2: settingsController.textStyle.copyWith(
+            fontSize: 34,
+          ),
+          headline3: settingsController.textStyle.copyWith(
+            fontSize: 30,
+          ),
+          headline4: settingsController.textStyle.copyWith(
+            fontSize: 24,
+          ),
+          bodyText1: settingsController.textStyle,
+          bodyText2: settingsController.textStyle,
+        );
     // Glue the SettingsController to the MaterialApp.
     //
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
@@ -57,12 +72,16 @@ class MyApp extends StatelessWidget {
           // Define a light and dark color theme. Then, read the user's
           // preferred ThemeMode (light, dark, or system default) from the
           // SettingsController to display the correct theme.
-          theme: ThemeData(
-            fontFamily: settingsController.textStyle.fontFamily,
+          theme: ThemeData.from(
+            colorScheme: const ColorScheme.light(),
+            textTheme: textTheme(),
           ),
-          darkTheme: ThemeData(
-            fontFamily: settingsController.textStyle.fontFamily,
-            brightness: Brightness.dark,
+          //(
+          //fontFamily: settingsController.textStyle.fontFamily,
+          //),
+          darkTheme: ThemeData.from(
+            colorScheme: const ColorScheme.dark(),
+            textTheme: textTheme(),
           ),
           themeMode: settingsController.themeMode,
 

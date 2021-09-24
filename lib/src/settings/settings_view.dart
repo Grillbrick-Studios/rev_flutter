@@ -55,8 +55,11 @@ class SettingsView extends StatelessWidget {
                   value: controller.textStyle,
                   onChanged: controller.updateTextStyle,
                   items: [
-                    const DropdownMenuItem(
-                      child: Text('Serifed Fonts'),
+                    DropdownMenuItem(
+                      child: Text(
+                        'Serifed Fonts',
+                        style: fonts.lightFont,
+                      ),
                       enabled: false,
                     ),
                     ...fonts.serifFonts.map((font) => DropdownMenuItem(
@@ -66,8 +69,11 @@ class SettingsView extends StatelessWidget {
                             style: font.style,
                           ),
                         )),
-                    const DropdownMenuItem(
-                      child: Text('Non-Serifed Fonts'),
+                    DropdownMenuItem(
+                      child: Text(
+                        'Non-Serifed Fonts',
+                        style: fonts.lightFont,
+                      ),
                       enabled: false,
                     ),
                     ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
@@ -77,8 +83,26 @@ class SettingsView extends StatelessWidget {
                             style: font.style,
                           ),
                         )),
+                    DropdownMenuItem(
+                      child: Text(
+                        'Fancy Fonts',
+                        style: fonts.lightFont,
+                      ),
+                      enabled: false,
+                    ),
+                    ...fonts.fancyFonts.map((font) => DropdownMenuItem(
+                          value: font.style,
+                          child: Text(
+                            font.label,
+                            style: font.style,
+                          ),
+                        )),
                   ]),
-            )
+            ),
+            const Text('''
+              This is a bunch of text to get a feel for the selected font.
+Ultricies dui. Cras gravida rutrum massa. Donec accumsan mattis turpis. Quisque sem. Quisque elementum sapien iaculis augue. In dui sem, congue sit amet, feugiat quis, lobortis at, eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum vehicula purus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean risus dui, volutpat non, posuere vitae, sollicitudin in, urna. Nam eget eros a enim pulvinar rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla facilisis massa ut massa. Sed nisi purus, malesuada eu, porta vulputate, suscipit auctor, nunc. Vestibulum convallis, augue eu luctus.
+            ''')
           ],
         ));
   }
