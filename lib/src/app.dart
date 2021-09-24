@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    textTheme() => TextTheme(
+    textTheme(BuildContext context) => TextTheme(
           headline1: settingsController.textStyle.copyWith(
             fontSize: 36,
           ),
@@ -30,6 +30,12 @@ class MyApp extends StatelessWidget {
           ),
           headline4: settingsController.textStyle.copyWith(
             fontSize: 24,
+          ),
+          headline5: settingsController.textStyle.copyWith(
+            fontSize: 20,
+          ),
+          headline6: settingsController.textStyle.copyWith(
+            fontSize: 18,
           ),
           bodyText1: settingsController.textStyle,
           bodyText2: settingsController.textStyle,
@@ -74,14 +80,14 @@ class MyApp extends StatelessWidget {
           // SettingsController to display the correct theme.
           theme: ThemeData.from(
             colorScheme: const ColorScheme.light(),
-            textTheme: textTheme(),
+            textTheme: textTheme(context),
           ),
           //(
           //fontFamily: settingsController.textStyle.fontFamily,
           //),
           darkTheme: ThemeData.from(
             colorScheme: const ColorScheme.dark(),
-            textTheme: textTheme(),
+            textTheme: textTheme(context),
           ),
           themeMode: settingsController.themeMode,
 
