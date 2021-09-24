@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'fonts.dart' as fonts;
 
 import 'settings_controller.dart';
 
@@ -16,36 +17,69 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        // Glue the SettingsController to the theme selection DropdownButton.
-        //
-        // When a user selects a theme from the dropdown list, the
-        // SettingsController is updated, which rebuilds the MaterialApp.
-        child: DropdownButton<ThemeMode>(
-          // Read the selected themeMode from the controller
-          value: controller.themeMode,
-          // Call the updateThemeMode method any time the user selects a theme.
-          onChanged: controller.updateThemeMode,
-          items: const [
-            DropdownMenuItem(
-              value: ThemeMode.system,
-              child: Text('System Theme'),
+        appBar: AppBar(
+          title: const Text('Settings'),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              // Glue the SettingsController to the theme selection DropdownButton.
+              //
+              // When a user selects a theme from the dropdown list, the
+              // SettingsController is updated, which rebuilds the MaterialApp.
+              child: DropdownButton<ThemeMode>(
+                // Read the selected themeMode from the controller
+                value: controller.themeMode,
+                // Call the updateThemeMode method any time the user selects a theme.
+                onChanged: controller.updateThemeMode,
+                items: const [
+                  DropdownMenuItem(
+                    value: ThemeMode.system,
+                    child: Text('System Theme'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.light,
+                    child: Text('Light Theme'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.dark,
+                    child: Text('Dark Theme'),
+                  )
+                ],
+              ),
             ),
-            DropdownMenuItem(
-              value: ThemeMode.light,
-              child: Text('Light Theme'),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.dark,
-              child: Text('Dark Theme'),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: DropdownButton<TextStyle>(
+                  value: controller.textStyle,
+                  onChanged: controller.updateTextStyle,
+                  items: [
+                    const DropdownMenuItem(
+                      child: Text('Serifed Fonts'),
+                      enabled: false,
+                    ),
+                    ...fonts.serifFonts.map((font) => DropdownMenuItem(
+                          value: font.style,
+                          child: Text(
+                            font.label,
+                            style: font.style,
+                          ),
+                        )),
+                    const DropdownMenuItem(
+                      child: Text('Non-Serifed Fonts'),
+                      enabled: false,
+                    ),
+                    ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
+                          value: font.style,
+                          child: Text(
+                            font.label,
+                            style: font.style,
+                          ),
+                        )),
+                  ]),
             )
           ],
-        ),
-      ),
-    );
+        ));
   }
 }

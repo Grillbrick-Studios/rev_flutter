@@ -18,6 +18,13 @@ class SettingsController with ChangeNotifier {
   // also persisting the changes with the SettingsService.
   late ThemeMode _themeMode;
 
+  // Make user font a private variable so it is not updated directly without
+  // also persisting the changes with the SettingsService.
+  late TextStyle _textStyle;
+
+  // Allow Widgets to read the user's preferred TextStyle.
+  TextStyle get textStyle => _textStyle;
+
   // Allow Widgets to read the user's preferred ThemeMode.
   ThemeMode get themeMode => _themeMode;
 
@@ -26,9 +33,24 @@ class SettingsController with ChangeNotifier {
   /// settings from the service.
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
+    _textStyle = await _settingsService.textStyle();
 
     // Important! Inform listeners a change has occurred.
     notifyListeners();
+  }
+
+  /// Update and persist the textStyle
+  Future<void> updateTextStyle(TextStyle? newTextStyle) async {
+    if (newTextStyle == null) return;
+
+    if (newTextStyle == _textStyle) return;
+
+    _textStyle = newTextStyle;
+
+    notifyListeners();
+
+    // Persist data
+    await _settingsService.updateTextStyle(newTextStyle);
   }
 
   /// Update and persist the ThemeMode based on the user's selection.
