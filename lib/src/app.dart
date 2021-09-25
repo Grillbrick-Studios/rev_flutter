@@ -2,10 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
+
+/// A simple Widget that presents a hello world screen.
+class HelloWorld extends StatelessWidget {
+  const HelloWorld({Key? key}) : super(key: key);
+
+  static const routeName = '/';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('REV'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to the settings page. If the user leaves and returns
+              // to the app after it has been killed while running in the
+              // background, the navigation stack is restored.
+              Navigator.restorablePushNamed(context, SettingsView.routeName);
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        margin: const EdgeInsets.all(6),
+        child: Column(
+          children: [
+            Text(
+              'Hello REV World!',
+              style: Theme.of(context).textTheme.headline1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -100,11 +136,9 @@ class MyApp extends StatelessWidget {
                 switch (routeSettings.name) {
                   case SettingsView.routeName:
                     return SettingsView(controller: settingsController);
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
-                  case SampleItemListView.routeName:
+                  case HelloWorld.routeName:
                   default:
-                    return const SampleItemListView();
+                    return const HelloWorld();
                 }
               },
             );
