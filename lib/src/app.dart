@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'models/bible.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
 /// A simple Widget that presents a hello world screen.
 class HelloWorld extends StatelessWidget {
-  const HelloWorld({Key? key}) : super(key: key);
+  final Bible bible;
+  const HelloWorld({Key? key, required this.bible}) : super(key: key);
 
   static const routeName = '/';
 
@@ -30,13 +32,13 @@ class HelloWorld extends StatelessWidget {
       ),
       body: Container(
         margin: const EdgeInsets.all(6),
-        child: Column(
-          children: [
-            Text(
-              'Hello REV World!',
-              style: Theme.of(context).textTheme.headline1,
-            ),
-          ],
+        child: ListView(
+          children: bible.listBooks
+              .map((b) => Text(
+                    b,
+                    style: Theme.of(context).textTheme.headline1,
+                  ))
+              .toList(),
         ),
       ),
     );
@@ -45,9 +47,11 @@ class HelloWorld extends StatelessWidget {
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
+  final Bible bible;
   const MyApp({
     Key? key,
     required this.settingsController,
+    required this.bible,
   }) : super(key: key);
 
   final SettingsController settingsController;
@@ -138,7 +142,9 @@ class MyApp extends StatelessWidget {
                     return SettingsView(controller: settingsController);
                   case HelloWorld.routeName:
                   default:
-                    return const HelloWorld();
+                    return HelloWorld(
+                      bible: bible,
+                    );
                 }
               },
             );
