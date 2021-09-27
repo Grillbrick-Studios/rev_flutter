@@ -16,8 +16,6 @@ void main() async {
 
   // Load the bible data.
   final bible = await Bible.fetch();
-  //final test = await Bible.fetchBody();
-  //print(test.runtimeType);
 
   // Run the app and pass in the SettingsController. The app listens to the
   // SettingsController for changes, then passes it further down to the
