@@ -7,6 +7,14 @@ class SimpleFont {
   final String label;
 
   const SimpleFont({required this.style, required this.label});
+  SimpleFont.fromString(String s)
+      : label = s,
+        style = allFonts
+            .firstWhere((l) => l.label == s, orElse: () => simpleDefault)
+            .style;
+
+  @override
+  String toString() => label;
 }
 
 // Serifed fonts
@@ -86,4 +94,7 @@ List<SimpleFont> nonSerifFonts = [
 ];
 
 TextStyle defaultFont = _merriweather;
+SimpleFont simpleDefault =
+    SimpleFont(style: _merriweather, label: 'Merriweather');
+List<SimpleFont> allFonts = fancyFonts + serifFonts + nonSerifFonts;
 TextStyle lightFont = _copperplateLight;
