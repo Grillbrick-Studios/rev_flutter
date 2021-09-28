@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rev_flutter/src/models/bible.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';

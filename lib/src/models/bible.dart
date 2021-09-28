@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'idb_file.dart';
+
+const _fileName = 'bible';
+IdbFile _idbFile = const IdbFile(_fileName);
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=201';
 
@@ -128,7 +132,7 @@ List<Verse> _parseVerses(String responseBody) {
 }
 
 String _encodeVerses(List<Verse> verses) {
-  return jsonEncode({'REV_Bible': verses.map((v) => v.toJson())});
+  return jsonEncode({'REV_Bible': verses.map((v) => v.toJson()).toList()});
 }
 
 class BiblePath {
@@ -152,9 +156,34 @@ class Bible {
 
   const Bible(this._data);
 
-  static Future<Bible> fetch() async {
+  static Future<Bible> load() async {
+    if (kIsWeb) {
+      try {
+        if ( await _idbFile.exists()) {
+          String contents = await _idbFile.readAsString();
+          var verses = _parseVerses(contents);
+          return Bible(verses);
+        } else {
+          return await Bible._fetch();
+        }
+      } catch(err) {
+        throw Exception("Error loading bible! $err");
+      }
+    } else {
+      // TODO: implement file loader for mobile
+      return await Bible._fetch();
+    }
+  }
+
+  static Future<Bible> _fetch() async {
     var response = await http.get(Uri.parse(_url));
-    return Bible(await compute(_parseVerses, response.body));
+    var bible = Bible(await compute(_parseVerses, response.body));
+    await bible.save();
+    return bible;
+  }
+
+  Future save() async {
+    await _idbFile.writeAsString(encoded);
   }
 
   String get encoded => _encodeVerses(_data);
