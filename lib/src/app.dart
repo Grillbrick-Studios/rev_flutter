@@ -7,14 +7,43 @@ import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
 /// A simple Widget that presents a hello world screen.
-class HelloWorld extends StatelessWidget {
-  final Bible bible;
-  const HelloWorld({Key? key, required this.bible}) : super(key: key);
+class HelloWorld extends StatefulWidget {
+  const HelloWorld({
+    Key? key,
+  }) : super(key: key);
 
   static const routeName = '/';
 
   @override
+  State<HelloWorld> createState() => _HelloWorldState();
+}
+
+class _HelloWorldState extends State<HelloWorld> {
+  Bible? bible;
+
+  @override
   Widget build(BuildContext context) {
+    final Widget bibleList;
+    if (bible != null) {
+      bibleList = ListView(
+        children: bible!.listBooks
+            .map((b) => Text(
+                  b,
+                  style: Theme.of(context).textTheme.headline1,
+                ))
+            .toList(),
+      );
+    } else {
+      Bible.fetch().then((b) => setState(() {
+            bible = b;
+          }));
+      bibleList = Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('REV'),
@@ -32,14 +61,7 @@ class HelloWorld extends StatelessWidget {
       ),
       body: Container(
         margin: const EdgeInsets.all(6),
-        child: ListView(
-          children: bible.listBooks
-              .map((b) => Text(
-                    b,
-                    style: Theme.of(context).textTheme.headline1,
-                  ))
-              .toList(),
-        ),
+        child: bibleList,
       ),
     );
   }
@@ -47,11 +69,9 @@ class HelloWorld extends StatelessWidget {
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
-  final Bible bible;
   const MyApp({
     Key? key,
     required this.settingsController,
-    required this.bible,
   }) : super(key: key);
 
   final SettingsController settingsController;
@@ -142,9 +162,7 @@ class MyApp extends StatelessWidget {
                     return SettingsView(controller: settingsController);
                   case HelloWorld.routeName:
                   default:
-                    return HelloWorld(
-                      bible: bible,
-                    );
+                    return const HelloWorld();
                 }
               },
             );

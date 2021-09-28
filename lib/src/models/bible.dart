@@ -25,16 +25,64 @@ enum Style {
   listPreGapNoPostGap,
 }
 
+int _styleToInt(Style style) {
+  switch (style) {
+    case Style.poetry:
+      return 2;
+    case Style.poetryNoPostGap:
+      return 3;
+    case Style.poetryPreGap:
+      return 4;
+    case Style.poetryPreGapNoPostGap:
+      return 5;
+    case Style.list:
+      return 6;
+    case Style.listNoPostGap:
+      return 7;
+    case Style.listPreGap:
+      return 8;
+    case Style.listPreGapNoPostGap:
+      return 9;
+    case Style.prose:
+    default:
+      return 1;
+  }
+}
+
+Style _intToStyle(int style) {
+  switch (style) {
+    case 2:
+      return Style.poetry;
+    case 3:
+      return Style.poetryNoPostGap;
+    case 4:
+      return Style.poetryPreGap;
+    case 5:
+      return Style.poetryPreGapNoPostGap;
+    case 6:
+      return Style.list;
+    case 7:
+      return Style.listNoPostGap;
+    case 8:
+      return Style.listPreGap;
+    case 9:
+      return Style.listPreGapNoPostGap;
+    case 1:
+    default:
+      return Style.prose;
+  }
+}
+
 class Verse {
-  late String book;
-  late int chapter;
-  late int verse;
-  late String? heading;
-  late bool microheading;
-  late bool paragraph;
-  late Style style;
-  late String? footnotes;
-  late String versetext;
+  String book;
+  int chapter;
+  int verse;
+  String? heading;
+  bool microheading;
+  bool paragraph;
+  Style style;
+  String? footnotes;
+  String versetext;
   Verse({
     required this.book,
     required this.chapter,
@@ -55,47 +103,32 @@ class Verse {
         footnotes = json['footnotes'],
         microheading = json['microheading'] == 1,
         paragraph = json['paragraph'] == 1,
-        versetext = json['versetext'] {
-    int styleInt = json['style'];
-    switch (styleInt) {
-      case 2:
-        style = Style.poetry;
-        break;
-      case 3:
-        style = Style.poetryNoPostGap;
-        break;
-      case 4:
-        style = Style.poetryPreGap;
-        break;
-      case 5:
-        style = Style.poetryPreGapNoPostGap;
-        break;
-      case 6:
-        style = Style.list;
-        break;
-      case 7:
-        style = Style.listNoPostGap;
-        break;
-      case 8:
-        style = Style.listPreGap;
-        break;
-      case 9:
-        style = Style.listPreGapNoPostGap;
-        break;
-      case 1:
-      default:
-        style = Style.prose;
-        break;
-    }
-  }
+        versetext = json['versetext'],
+        style = _intToStyle(json['style']);
+
+  Map<String, dynamic> toJson() => {
+        'book': book,
+        'chapter': chapter,
+        'verse': verse,
+        'heading': heading,
+        'footnotes': footnotes,
+        'microheading': microheading ? 1 : 0,
+        'paragraph': paragraph ? 1 : 0,
+        'versetext': versetext,
+        'style': _styleToInt(style),
+      };
 }
 
-List<Verse> parseVerses(String responseBody) {
+List<Verse> _parseVerses(String responseBody) {
   final parsed = jsonDecode(responseBody);
 
   return parsed['REV_Bible']
       .map<Verse>((json) => Verse.fromJson(json))
       .toList();
+}
+
+String _encodeVerses(List<Verse> verses) {
+  return jsonEncode({'REV_Bible': verses.map((v) => v.toJson())});
 }
 
 class BiblePath {
@@ -121,8 +154,10 @@ class Bible {
 
   static Future<Bible> fetch() async {
     var response = await http.get(Uri.parse(_url));
-    return Bible(await compute(parseVerses, response.body));
+    return Bible(await compute(_parseVerses, response.body));
   }
+
+  String get encoded => _encodeVerses(_data);
 
   List<String> get listBooks => _data.map((v) => v.book).toSet().toList();
 

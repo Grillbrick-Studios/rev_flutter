@@ -14,14 +14,10 @@ void main() async {
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
 
-  // Load the bible data.
-  final bible = await Bible.fetch();
-
   // Run the app and pass in the SettingsController. The app listens to the
   // SettingsController for changes, then passes it further down to the
   // SettingsView.
   runApp(MyApp(
     settingsController: settingsController,
-    bible: bible,
   ));
 }
