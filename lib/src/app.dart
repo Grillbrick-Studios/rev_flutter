@@ -2,69 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'models/bible.dart';
+import 'pages/home.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
-/// A simple Widget that presents a hello world screen.
-class HelloWorld extends StatefulWidget {
-  const HelloWorld({
-    Key? key,
-  }) : super(key: key);
-
-  static const routeName = '/';
-
-  @override
-  State<HelloWorld> createState() => _HelloWorldState();
-}
-
-class _HelloWorldState extends State<HelloWorld> {
-  Bible? bible;
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget bibleList;
-    if (bible != null) {
-      bibleList = ListView(
-        children: bible!.listBooks
-            .map((b) => Text(
-                  b,
-                  style: Theme.of(context).textTheme.headline1,
-                ))
-            .toList(),
-      );
-    } else {
-      Bible.load().then((b) => setState(() {
-            bible = b;
-          }));
-      bibleList = Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
+Widget wrapTarget(
+    {required BuildContext context,
+    required RouteSettings routeSettings,
+    required Widget child}) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('REV'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () {
+            // Navigate to the settings page. If the user leaves and returns
+            // to the app after it has been killed while running in the
+            // background, the navigation stack is restored.
+            Navigator.restorablePushNamed(context, SettingsView.routeName);
+          },
         ),
-      );
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('REV'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to the settings page. If the user leaves and returns
-              // to the app after it has been killed while running in the
-              // background, the navigation stack is restored.
-              Navigator.restorablePushNamed(context, SettingsView.routeName);
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        margin: const EdgeInsets.all(6),
-        child: bibleList,
-      ),
-    );
-  }
+      ],
+    ),
+    body: Container(
+      margin: const EdgeInsets.all(6),
+      child: child,
+    ),
+  );
 }
 
 /// The Widget that configures your application.
@@ -159,10 +124,21 @@ class MyApp extends StatelessWidget {
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
                   case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
+                    return wrapTarget(
+                      context: context,
+                      routeSettings: routeSettings,
+                      child: SettingsView(
+                        controller: settingsController,
+                      ),
+                    );
                   case HelloWorld.routeName:
                   default:
-                    return const HelloWorld();
+                    // return const HelloWorld();
+                    return wrapTarget(
+                      context: context,
+                      routeSettings: routeSettings,
+                      child: const HelloWorld(),
+                    );
                 }
               },
             );

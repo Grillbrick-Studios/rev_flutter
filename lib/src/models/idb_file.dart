@@ -1,11 +1,23 @@
+import 'dart:io';
+
 import 'package:idb_shim/idb.dart';
 import 'package:idb_shim/idb_browser.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future<String> get localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  return directory.path;
+}
+
+Future<File> localFile(String fileName) async {
+  final path = await localPath;
+  return File('$path/$fileName');
+}
 
 ///
 /// A file using Indexed DB
 ///
 class IdbFile {
-
   static const int _version = 1;
   static const String _dbName = 'files.db';
   static const String _objectStoreName = 'files';
@@ -20,14 +32,14 @@ class IdbFile {
 
   Future<Database> _openDb() async {
     final idbFactory = getIdbFactory();
-    if( idbFactory == null ){
+    if (idbFactory == null) {
       throw Exception('getIdbFactory() failed');
     }
     return idbFactory.open(
       _dbName,
       version: _version,
-      onUpgradeNeeded: (e)
-        => e.database.createObjectStore(_objectStoreName, keyPath: _propNameFilePath),
+      onUpgradeNeeded: (e) => e.database
+          .createObjectStore(_objectStoreName, keyPath: _propNameFilePath),
     );
   }
 
@@ -46,7 +58,7 @@ class IdbFile {
     final store = txn.objectStore(_objectStoreName);
     final object = await store.getObject(_filePath) as Map?;
     await txn.completed;
-    if( object == null ){
+    if (object == null) {
       throw Exception('file not found: $_filePath');
     }
     return object['contents'] as String;
@@ -70,5 +82,4 @@ class IdbFile {
     await store.delete(_filePath);
     await txn.completed;
   }
-
 }

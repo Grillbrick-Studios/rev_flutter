@@ -3,20 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 import 'idb_file.dart';
 
 const _fileName = 'bible';
-Future<String> get _localPath async {
-  final directory = await getApplicationDocumentsDirectory();
-  return directory.path;
-}
-
-Future<File> get _localFile async {
-  final path = await _localPath;
-  return File('$path/$_fileName');
-}
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=201';
 
@@ -184,7 +174,7 @@ class Bible {
       }
     } else {
       // File file = File(_fileName);
-      File file = await _localFile;
+      File file = await localFile(_fileName);
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseVerses(contents);
@@ -207,7 +197,7 @@ class Bible {
       IdbFile idbFile = const IdbFile(_fileName);
       await idbFile.writeAsString(encoded);
     } else {
-      File file = await _localFile;
+      File file = await localFile(_fileName);
       await file.writeAsString(encoded);
     }
   }
