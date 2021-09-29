@@ -207,7 +207,7 @@ class Bible {
   List<String> get listBooks => _data.map((v) => v.book).toSet().toList();
 
   List<int> listChapters({required String book}) =>
-      _data.where((v) => v.book == book).map((v) => v.chapter).toList();
+      _data.where((v) => v.book == book).map((v) => v.chapter).toSet().toList();
 
   List<int> listVerses({required String book, required int chapter}) => _data
       .where((v) => v.book == book && v.chapter == chapter)

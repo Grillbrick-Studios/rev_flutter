@@ -43,13 +43,147 @@ class _HelloWorldState extends State<HelloWorld> {
   }
 }
 
+/// The Home Page to display data.
 class Home extends StatelessWidget {
   static const routeName = '/';
   final GlobalState state;
 
+  /// A constructor that gets the global state.
   const Home({Key? key, required this.state}) : super(key: key);
+
+  /// A list of books to be displayed as buttons
+  Widget getBooks(BuildContext context) {
+    if (state.bible != null) {
+      return SingleChildScrollView(
+        child: Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: state.bible!.listBooks.map((bookName) {
+                List<Widget> heading = [];
+                Widget btnWidget = TextButton(
+                  onPressed: () => state.updateBookName(bookName),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      shape: MaterialStateProperty.resolveWith((states) =>
+                          const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30))))),
+                  child: Text(
+                    bookName,
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                );
+                if (bookName.startsWith('Gen')) {
+                  heading.add(Row(children: [
+                    Text(
+                      'Old Testament',
+                      style: Theme.of(context).textTheme.headline2,
+                    )
+                  ]));
+                } else if (bookName.startsWith('Mat')) {
+                  heading.add(Row(
+                    children: [
+                      Text(
+                        'New Testament',
+                        style: Theme.of(context).textTheme.headline2,
+                      )
+                    ],
+                  ));
+                }
+                return [...heading, btnWidget];
+              }).reduce((value, element) {
+                value.addAll(element);
+                return value;
+              }) +
+              [
+                // This adds some scroll past stuff
+                const SizedBox(
+                  width: 100,
+                  height: 500,
+                  child: null,
+                )
+              ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
+  }
+
+  /// A list of chapters to be displayed as buttons
+  Widget getChapters(BuildContext context) {
+    if (state.bible != null) {
+      return SingleChildScrollView(
+        child: Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: <Widget>[
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => state.updateBookName(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.blue),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.book.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    )
+                  ],
+                )
+              ] +
+              state.bible!.listChapters(book: state.book!).map((chapter) {
+                Widget btnWidget = TextButton(
+                  onPressed: () => state.updateChapter(chapter),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      shape: MaterialStateProperty.resolveWith((states) =>
+                          const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30))))),
+                  child: Text(
+                    chapter.toString(),
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                );
+                return btnWidget;
+              }).toList() +
+              [
+                // This adds some scroll past stuff
+                const SizedBox(
+                  width: 100,
+                  height: 500,
+                  child: null,
+                )
+              ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Welcome Home!'));
+    return state.book == null
+        ? getBooks(context)
+        : state.chapter == null
+            ? getChapters(context)
+            : getBooks(context);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rev_flutter/src/models/bible.dart';
 
 import 'stored_state.dart';
 
@@ -8,10 +9,10 @@ import 'stored_state.dart';
 /// Controllers glue Data Services to Flutter Widgets. The SettingsController
 /// uses the SettingsService to store and retrieve user settings.
 class GlobalState with ChangeNotifier {
-  GlobalState(this._settingsService);
+  GlobalState(this._store);
 
   // Make SettingsService a private variable so it is not used directly.
-  final StoredState _settingsService;
+  final StoredState _store;
 
   // Make ThemeMode a private variable so it is not updated directly without
   // also persisting the changes with the SettingsService.
@@ -25,6 +26,22 @@ class GlobalState with ChangeNotifier {
   // without also persisting the changes with the SettingsService.
   late double _textSize;
 
+  // Make the bible data private so it is not updated directly without also
+  // persisting the changes.
+  late Bible? _bible;
+
+  // Make the book name private so it is not updated directly without also
+  // persisting the changes.
+  late String? _book;
+
+  // Make the chapter private so it is not updated directly without also
+  // persisting the changes.
+  late int? _chapter;
+
+  // Make the verse private so it is not updated directly without also
+  // persisting the changes.
+  late int? _verse;
+
   // Allow Widgets to read the user's preferred TextStyle.
   TextStyle get textStyle => _textStyle;
 
@@ -34,13 +51,31 @@ class GlobalState with ChangeNotifier {
   // Allow Widgets to read the user's preferred Text Size
   double get textSize => _textSize;
 
+  // Allow Widgets to get bible data.
+  Bible? get bible => _bible;
+
+  String? get book => _book;
+
+  int? get chapter => _chapter;
+
+  int? get verse => _verse;
+
   /// Load the user's settings from the SettingsService. It may load from a
   /// local database or the internet. The controller only knows it can load the
   /// settings from the service.
   Future<void> loadSettings() async {
-    _themeMode = await _settingsService.themeMode();
-    _textStyle = await _settingsService.textStyle();
-    _textSize = await _settingsService.textSize();
+    _themeMode = await _store.themeMode;
+    _textStyle = await _store.textStyle;
+    _textSize = await _store.textSize;
+    // Load the bible data asyncronously
+    _bible = null;
+    _book = await _store.bookName;
+    _chapter = await _store.chapter;
+    _verse = await _store.verse;
+    Bible.load().then((b) {
+      _bible = b;
+      notifyListeners();
+    });
 
     // Important! Inform listeners a change has occurred.
     notifyListeners();
@@ -57,7 +92,7 @@ class GlobalState with ChangeNotifier {
     notifyListeners();
 
     // Persist data
-    await _settingsService.updateTextStyle(newTextStyle);
+    await _store.updateTextStyle(newTextStyle);
   }
 
   /// Update and persist the ThemeMode based on the user's selection.
@@ -75,7 +110,7 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _settingsService.updateThemeMode(newThemeMode);
+    await _store.updateThemeMode(newThemeMode);
   }
 
   /// Update and persist the Text Size based on the user's selection.
@@ -87,7 +122,7 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _settingsService.updateTextSize(_textSize);
+    await _store.updateTextSize(_textSize);
   }
 
   Future decreaseTextSize([double amount = 2]) async {
@@ -98,10 +133,37 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _settingsService.updateTextSize(_textSize);
+    await _store.updateTextSize(_textSize);
   }
 
   Future resetTextSize() async {
     _textSize = defaultTextSize;
+  }
+
+  Future updateBookName([String? book]) async {
+    if (book == _book) return;
+
+    _book = book;
+
+    notifyListeners();
+
+    await _store.updateBookName(book);
+  }
+
+  Future updateChapter([int? chapter]) async {
+    if (chapter == chapter) return;
+
+    _chapter = chapter;
+
+    notifyListeners();
+
+    await _store.updateChapter(chapter);
+  }
+
+  Future updateVerse([int? verse]) async {
+    if (verse == verse) return;
+    _verse = verse;
+    notifyListeners();
+    await _store.updateVerse(verse);
   }
 }
