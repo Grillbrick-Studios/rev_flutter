@@ -45,25 +45,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     textTheme(BuildContext context) => TextTheme(
           headline1: settingsController.textStyle.copyWith(
-            fontSize: 36,
+            fontSize: settingsController.textSize * 3,
           ),
           headline2: settingsController.textStyle.copyWith(
-            fontSize: 34,
+            fontSize: settingsController.textSize * 2.5,
           ),
           headline3: settingsController.textStyle.copyWith(
-            fontSize: 30,
+            fontSize: settingsController.textSize * 2,
           ),
           headline4: settingsController.textStyle.copyWith(
-            fontSize: 24,
+            fontSize: settingsController.textSize * 1.8,
           ),
           headline5: settingsController.textStyle.copyWith(
-            fontSize: 20,
+            fontSize: settingsController.textSize * 1.6,
           ),
           headline6: settingsController.textStyle.copyWith(
-            fontSize: 18,
+            fontSize: settingsController.textSize * 1.5,
           ),
-          bodyText1: settingsController.textStyle,
-          bodyText2: settingsController.textStyle,
+          bodyText1: settingsController.textStyle.copyWith(
+            fontSize: settingsController.textSize,
+          ),
+          bodyText2: settingsController.textStyle.copyWith(
+            fontSize: settingsController.textSize,
+          ),
         );
     // Glue the SettingsController to the MaterialApp.
     //

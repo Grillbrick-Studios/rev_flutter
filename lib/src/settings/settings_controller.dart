@@ -21,11 +21,18 @@ class SettingsController with ChangeNotifier {
   // also persisting the changes with the SettingsService.
   late TextStyle _textStyle;
 
+  // Make user font size a private variable so it is not updated directly
+  // without also persisting the changes with the SettingsService.
+  late double _textSize;
+
   // Allow Widgets to read the user's preferred TextStyle.
   TextStyle get textStyle => _textStyle;
 
   // Allow Widgets to read the user's preferred ThemeMode.
   ThemeMode get themeMode => _themeMode;
+
+  // Allow Widgets to read the user's preferred Text Size
+  double get textSize => _textSize;
 
   /// Load the user's settings from the SettingsService. It may load from a
   /// local database or the internet. The controller only knows it can load the
@@ -33,6 +40,7 @@ class SettingsController with ChangeNotifier {
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
     _textStyle = await _settingsService.textStyle();
+    _textSize = await _settingsService.textSize();
 
     // Important! Inform listeners a change has occurred.
     notifyListeners();
@@ -56,7 +64,7 @@ class SettingsController with ChangeNotifier {
   Future<void> updateThemeMode(ThemeMode? newThemeMode) async {
     if (newThemeMode == null) return;
 
-    // Dot not perform any work if new and old ThemeMode are identical
+    // Do not perform any work if new and old ThemeMode are identical
     if (newThemeMode == _themeMode) return;
 
     // Otherwise, store the new theme mode in memory
@@ -68,5 +76,32 @@ class SettingsController with ChangeNotifier {
     // Persist the changes to a local database or the internet using the
     // SettingService.
     await _settingsService.updateThemeMode(newThemeMode);
+  }
+
+  /// Update and persist the Text Size based on the user's selection.
+  Future increaseTextSize([double amount = 2]) async {
+    _textSize += amount;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    await _settingsService.updateTextSize(_textSize);
+  }
+
+  Future decreaseTextSize([double amount = 2]) async {
+    _textSize -= amount;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    await _settingsService.updateTextSize(_textSize);
+  }
+
+  Future resetTextSize() async {
+    _textSize = defaultTextSize;
   }
 }

@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fonts.dart' as fonts;
 
+double defaultTextSize = 24;
+
 /// Encode a theme into a string.
 String _encodeThemeMode(ThemeMode mode) {
   switch (mode) {
@@ -58,8 +60,18 @@ class SettingsService {
     }
   }
 
+  /// Loads the User's preferred TextSize from local or remote storage.
+  Future textSize() async {
+    try {
+      var preferences = await SharedPreferences.getInstance();
+      return preferences.getDouble('textSize') ?? defaultTextSize;
+    } catch (err) {
+      return defaultTextSize;
+    }
+  }
+
   /// Persists the user's preferred ThemeMode to local or remote storage.
-  Future<void> updateThemeMode(ThemeMode theme) async {
+  Future updateThemeMode(ThemeMode theme) async {
     try {
       var preferences = await SharedPreferences.getInstance();
       preferences.setString('themeMode', _encodeThemeMode(theme));
@@ -69,13 +81,23 @@ class SettingsService {
   }
 
   /// Persists the user's preferred TextStyle to local or remote storage.
-  Future<void> updateTextStyle(TextStyle newTextStyle) async {
+  Future updateTextStyle(TextStyle style) async {
     try {
       var preferences = await SharedPreferences.getInstance();
       // get the simpleFont
-      var simpleFont = fonts.allFonts.firstWhere((f) => f.style == newTextStyle,
+      var simpleFont = fonts.allFonts.firstWhere((f) => f.style == style,
           orElse: () => fonts.simpleDefault);
       preferences.setString('textStyle', simpleFont.toString());
+    } catch (err) {
+      throw Exception('Error getting SharedPreferences: $err');
+    }
+  }
+
+  /// Persists the user's preferred TextSize to local or remote storage.
+  Future updateTextSize(double size) async {
+    try {
+      var preferences = await SharedPreferences.getInstance();
+      preferences.setDouble('textSize', size);
     } catch (err) {
       throw Exception('Error getting SharedPreferences: $err');
     }

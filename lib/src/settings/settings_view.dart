@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'fonts.dart' as fonts;
@@ -29,6 +30,41 @@ class SettingsDropdown<T> extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Displays a single setting in a row with a header and buttons for
+/// increase/decrease and optional reset.
+class SettingsButtons extends StatelessWidget {
+  const SettingsButtons({
+    Key? key,
+    required this.title,
+    required this.onIncrease,
+    required this.onDecrease,
+    this.onReset,
+  }) : super(key: key);
+
+  final String title;
+  final void Function() onIncrease;
+  final void Function() onDecrease;
+  final void Function()? onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    return onReset == null
+        ? Row(children: [
+            Text(title),
+            IconButton(
+                onPressed: onDecrease, icon: const Icon(CupertinoIcons.minus)),
+            IconButton(
+                onPressed: onIncrease, icon: const Icon(CupertinoIcons.plus)),
+          ])
+        : Row(children: [
+            Text(title),
+            IconButton(onPressed: onDecrease, icon: const Icon(Icons.remove)),
+            IconButton(onPressed: onIncrease, icon: const Icon(Icons.add)),
+            IconButton(onPressed: onReset, icon: const Icon(Icons.refresh))
+          ]);
   }
 }
 
@@ -117,6 +153,12 @@ class SettingsView extends StatelessWidget {
                 )),
           ],
         ),
+        SettingsButtons(
+          title: 'Font Size',
+          onIncrease: _onIncreaseFontSize,
+          onDecrease: _onDecreaseFontSize,
+          onReset: _onResetFontSize,
+        ),
         const Text('''
               This is a bunch of text to get a feel for the selected font.
 Ultricies dui. Cras gravida rutrum massa. Donec accumsan mattis turpis. Quisque sem. Quisque elementum sapien iaculis augue. In dui sem, congue sit amet, feugiat quis, lobortis at, eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum vehicula purus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean risus dui, volutpat non, posuere vitae, sollicitudin in, urna. Nam eget eros a enim pulvinar rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla facilisis massa ut massa. Sed nisi purus, malesuada eu, porta vulputate, suscipit auctor, nunc. Vestibulum convallis, augue eu luctus.
@@ -124,79 +166,14 @@ Ultricies dui. Cras gravida rutrum massa. Donec accumsan mattis turpis. Quisque 
       ],
     );
   }
+
+  void _onIncreaseFontSize() {
+    controller.increaseTextSize();
+  }
+
+  void _onDecreaseFontSize() {
+    controller.decreaseTextSize();
+  }
+
+  void _onResetFontSize() {}
 }
-//Padding(
-//padding: const EdgeInsets.all(16),
-//// Glue the SettingsController to the theme selection DropdownButton.
-////
-//// When a user selects a theme from the dropdown list, the
-//// SettingsController is updated, which rebuilds the MaterialApp.
-//child: DropdownButton<ThemeMode>(
-//// Read the selected themeMode from the controller
-//value: controller.themeMode,
-//// Call the updateThemeMode method any time the user selects a theme.
-//onChanged: controller.updateThemeMode,
-//items: const [
-//DropdownMenuItem(
-//value: ThemeMode.system,
-//child: Text('System Theme'),
-//),
-//DropdownMenuItem(
-//value: ThemeMode.light,
-//child: Text('Light Theme'),
-//),
-//DropdownMenuItem(
-//value: ThemeMode.dark,
-//child: Text('Dark Theme'),
-//)
-//],
-//),
-//),
-//Padding(
-//padding: const EdgeInsets.all(16),
-//child: DropdownButton<TextStyle>(
-//value: controller.textStyle,
-//onChanged: controller.updateTextStyle,
-//items: [
-//DropdownMenuItem(
-//child: Text(
-//'Serifed Fonts',
-//style: fonts.lightFont,
-//),
-//enabled: false,
-//),
-//...fonts.serifFonts.map((font) => DropdownMenuItem(
-//value: font.style,
-//child: Text(
-//font.label,
-//style: font.style,
-//),
-//)),
-//DropdownMenuItem(
-//child: Text(
-//'Non-Serifed Fonts',
-//style: fonts.lightFont,
-//),
-//enabled: false,
-//),
-//...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
-//value: font.style,
-//child: Text(
-//font.label,
-//style: font.style,
-//),
-//)),
-//DropdownMenuItem(
-//child: Text(
-//'Fancy Fonts',
-//style: fonts.lightFont,
-//),
-//enabled: false,
-//),
-//...fonts.fancyFonts.map((font) => DropdownMenuItem(
-//value: font.style,
-//child: Text(
-//font.label,
-//style: font.style,
-//),
-//)),
