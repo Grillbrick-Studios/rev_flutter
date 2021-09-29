@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'fonts.dart' as fonts;
 
+import 'fonts.dart' as fonts;
 import 'settings_controller.dart';
 
 /// Displays a single setting in a row with a header and dropdown.
@@ -45,88 +45,84 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Settings'),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SettingsDropdown(
+          'Color Theme',
+          onUpdate: controller.updateThemeMode,
+          value: controller.themeMode,
+          options: const [
+            DropdownMenuItem(
+              value: ThemeMode.system,
+              child: Text('System Theme'),
+            ),
+            DropdownMenuItem(
+              value: ThemeMode.light,
+              child: Text('Light Theme'),
+            ),
+            DropdownMenuItem(
+              value: ThemeMode.dark,
+              child: Text('Dark Theme'),
+            ),
+          ],
         ),
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SettingsDropdown(
-              'Color Theme',
-              onUpdate: controller.updateThemeMode,
-              value: controller.themeMode,
-              options: const [
-                DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('System Theme'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text('Light Theme'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text('Dark Theme'),
-                ),
-              ],
+        SettingsDropdown<TextStyle>(
+          'Text Font',
+          value: controller.textStyle,
+          onUpdate: controller.updateTextStyle,
+          options: [
+            DropdownMenuItem(
+              child: Text(
+                'Serifed Fonts',
+                style: fonts.lightFont,
+              ),
+              enabled: false,
             ),
-            SettingsDropdown<TextStyle>(
-              'Text Font',
-              value: controller.textStyle,
-              onUpdate: controller.updateTextStyle,
-              options: [
-                DropdownMenuItem(
+            ...fonts.serifFonts.map((font) => DropdownMenuItem(
+                  value: font.style,
                   child: Text(
-                    'Serifed Fonts',
-                    style: fonts.lightFont,
+                    font.label,
+                    style: font.style,
                   ),
-                  enabled: false,
-                ),
-                ...fonts.serifFonts.map((font) => DropdownMenuItem(
-                      value: font.style,
-                      child: Text(
-                        font.label,
-                        style: font.style,
-                      ),
-                    )),
-                DropdownMenuItem(
-                  child: Text(
-                    'Non-Serifed Fonts',
-                    style: fonts.lightFont,
-                  ),
-                  enabled: false,
-                ),
-                ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
-                      value: font.style,
-                      child: Text(
-                        font.label,
-                        style: font.style,
-                      ),
-                    )),
-                DropdownMenuItem(
-                  child: Text(
-                    'Fancy Fonts',
-                    style: fonts.lightFont,
-                  ),
-                  enabled: false,
-                ),
-                ...fonts.fancyFonts.map((font) => DropdownMenuItem(
-                      value: font.style,
-                      child: Text(
-                        font.label,
-                        style: font.style,
-                      ),
-                    )),
-              ],
+                )),
+            DropdownMenuItem(
+              child: Text(
+                'Non-Serifed Fonts',
+                style: fonts.lightFont,
+              ),
+              enabled: false,
             ),
-            const Text('''
+            ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
+                  value: font.style,
+                  child: Text(
+                    font.label,
+                    style: font.style,
+                  ),
+                )),
+            DropdownMenuItem(
+              child: Text(
+                'Fancy Fonts',
+                style: fonts.lightFont,
+              ),
+              enabled: false,
+            ),
+            ...fonts.fancyFonts.map((font) => DropdownMenuItem(
+                  value: font.style,
+                  child: Text(
+                    font.label,
+                    style: font.style,
+                  ),
+                )),
+          ],
+        ),
+        const Text('''
               This is a bunch of text to get a feel for the selected font.
 Ultricies dui. Cras gravida rutrum massa. Donec accumsan mattis turpis. Quisque sem. Quisque elementum sapien iaculis augue. In dui sem, congue sit amet, feugiat quis, lobortis at, eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum vehicula purus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean risus dui, volutpat non, posuere vitae, sollicitudin in, urna. Nam eget eros a enim pulvinar rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla facilisis massa ut massa. Sed nisi purus, malesuada eu, porta vulputate, suscipit auctor, nunc. Vestibulum convallis, augue eu luctus.
             ''')
-          ],
-        ));
+      ],
+    );
   }
 }
 //Padding(
