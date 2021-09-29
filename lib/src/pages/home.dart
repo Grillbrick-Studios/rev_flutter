@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rev_flutter/src/settings/global_state.dart';
 
 import '../models/bible.dart';
 
@@ -39,5 +40,16 @@ class _HelloWorldState extends State<HelloWorld> {
         ),
       );
     }
+  }
+}
+
+class Home extends StatelessWidget {
+  static const routeName = '/';
+  final GlobalState state;
+
+  const Home({Key? key, required this.state}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Welcome Home!'));
   }
 }

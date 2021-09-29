@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'pages/home.dart';
-import 'settings/settings_controller.dart';
+import 'settings/global_state.dart';
 import 'settings/settings_view.dart';
 
 Widget wrapTarget(
@@ -36,37 +36,37 @@ Widget wrapTarget(
 class MyApp extends StatelessWidget {
   const MyApp({
     Key? key,
-    required this.settingsController,
+    required this.globalState,
   }) : super(key: key);
 
-  final SettingsController settingsController;
+  final GlobalState globalState;
 
   @override
   Widget build(BuildContext context) {
     textTheme(BuildContext context) => TextTheme(
-          headline1: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 3,
+          headline1: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 3,
           ),
-          headline2: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 2.5,
+          headline2: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 2.5,
           ),
-          headline3: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 2,
+          headline3: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 2,
           ),
-          headline4: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 1.8,
+          headline4: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 1.8,
           ),
-          headline5: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 1.6,
+          headline5: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 1.6,
           ),
-          headline6: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize * 1.5,
+          headline6: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize * 1.5,
           ),
-          bodyText1: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize,
+          bodyText1: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize,
           ),
-          bodyText2: settingsController.textStyle.copyWith(
-            fontSize: settingsController.textSize,
+          bodyText2: globalState.textStyle.copyWith(
+            fontSize: globalState.textSize,
           ),
         );
     // Glue the SettingsController to the MaterialApp.
@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return AnimatedBuilder(
-      animation: settingsController,
+      animation: globalState,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
           // Providing a restorationScopeId allows the Navigator built by the
@@ -118,7 +118,7 @@ class MyApp extends StatelessWidget {
             colorScheme: const ColorScheme.dark(),
             textTheme: textTheme(context),
           ),
-          themeMode: settingsController.themeMode,
+          themeMode: globalState.themeMode,
 
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.
@@ -132,16 +132,17 @@ class MyApp extends StatelessWidget {
                       context: context,
                       routeSettings: routeSettings,
                       child: SettingsView(
-                        controller: settingsController,
+                        controller: globalState,
                       ),
                     );
-                  case HelloWorld.routeName:
+                  case Home.routeName:
                   default:
-                    // return const HelloWorld();
                     return wrapTarget(
                       context: context,
                       routeSettings: routeSettings,
-                      child: const HelloWorld(),
+                      child: Home(
+                        state: globalState,
+                      ),
                     );
                 }
               },

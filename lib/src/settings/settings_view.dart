@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'fonts.dart' as fonts;
-import 'settings_controller.dart';
+import 'global_state.dart';
 
 /// Displays a single setting in a row with a header and dropdown.
 class SettingsDropdown<T> extends StatelessWidget {
@@ -26,7 +26,10 @@ class SettingsDropdown<T> extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16),
           child: DropdownButton<T>(
-              value: value, onChanged: onUpdate, items: options),
+            value: value,
+            onChanged: onUpdate,
+            items: options,
+          ),
         ),
       ],
     );
@@ -77,7 +80,7 @@ class SettingsView extends StatelessWidget {
 
   static const routeName = '/settings';
 
-  final SettingsController controller;
+  final GlobalState controller;
 
   @override
   Widget build(BuildContext context) {
