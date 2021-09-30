@@ -1,4 +1,4 @@
-import 'package:rev_flutter/src/models/token.dart';
+import 'words.dart';
 
 enum Style {
   // style: 1    This is flowing text, or prose. See most verses in the NT.
@@ -114,5 +114,5 @@ class Verse {
         'style': _styleToInt(style),
       };
 
-  List<Token> get tokens => Token.splitFrom(versetext);
+  WordMap get words => Words.fromVerse(this);
 }

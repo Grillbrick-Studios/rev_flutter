@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:rev_flutter/src/models/token.dart';
+import 'package:rev_flutter/src/models/words.dart';
 
 import 'idb_file.dart';
 import 'verse.dart';
@@ -24,6 +24,10 @@ String _encodeVerses(List<Verse> verses) {
   return jsonEncode({'REV_Bible': verses.map((v) => v.toJson()).toList()});
 }
 
+WordMap _getWords(List<Verse> verses) {
+  return Words.fromVerses(verses);
+}
+
 class BiblePath {
   final String book;
   final int chapter;
@@ -38,6 +42,8 @@ class BiblePath {
           ? '$book $chapter'
           : '$book $chapter:$verse';
 }
+
+WordMap _words = {};
 
 class Bible {
   final List<Verse> _data;
@@ -101,12 +107,37 @@ class Bible {
       .map((v) => v.verse)
       .toList();
 
-  List<Token> listTokens(
-          {required String book, required int chapter, required int verse}) =>
-      _data
-          .firstWhere(
-              (v) => v.book == book && v.chapter == chapter && v.verse == verse)
-          .tokens;
+  Future get words async {
+    if (_words == {}) {
+      _words = await compute(_getWords, _data);
+    }
+    return _words;
+  }
+
+  Future<WordMap> listWords({
+    String? book,
+    int? chapter,
+    int? verse,
+  }) async {
+    WordMap words = await this.words;
+    WordMap shortList = {};
+    words.forEach((word, pathSet) {
+      if (pathSet.any((path) =>
+          book == null ||
+          path.book == book && chapter == null ||
+          path.book == book && path.chapter == chapter && verse == null ||
+          path.book == book &&
+              path.chapter == chapter &&
+              path.verse == verse)) {
+        if (shortList.containsKey(word)) {
+          shortList[word]?.addAll(pathSet);
+        } else {
+          shortList[word] = pathSet;
+        }
+      }
+    });
+    return shortList;
+  }
 
   String getVerseText(
           {required String book, required int chapter, required int verse}) =>
