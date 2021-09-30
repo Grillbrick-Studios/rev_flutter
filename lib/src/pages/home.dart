@@ -129,7 +129,7 @@ class Home extends StatelessWidget {
                       onPressed: () => state.updateBookName(),
                       style: ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(Colors.blue),
+                              MaterialStateProperty.all(Colors.red),
                           shape: MaterialStateProperty.resolveWith((states) =>
                               const RoundedRectangleBorder(
                                   borderRadius:
@@ -178,12 +178,183 @@ class Home extends StatelessWidget {
     }
   }
 
+  /// A list of verses to be displayed as buttons
+  Widget getVerses(BuildContext context) {
+    if (state.bible != null) {
+      return SingleChildScrollView(
+        child: Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: <Widget>[
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => state.updateBookName(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.book.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => state.updateChapter(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.chapter.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    )
+                  ],
+                )
+              ] +
+              state.bible!
+                  .listVerses(book: state.book!, chapter: state.chapter!)
+                  .map((verse) {
+                Widget btnWidget = TextButton(
+                  onPressed: () => state.updateVerse(verse),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      shape: MaterialStateProperty.resolveWith((states) =>
+                          const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30))))),
+                  child: Text(
+                    verse.toString(),
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                );
+                return btnWidget;
+              }).toList() +
+              [
+                // This adds some scroll past stuff
+                const SizedBox(
+                  width: 100,
+                  height: 500,
+                  child: null,
+                )
+              ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
+  }
+
+  /// A list of tokens from the selected verse
+  Widget getTokens(BuildContext context) {
+    if (state.bible != null) {
+      return SingleChildScrollView(
+        child: Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: <Widget>[
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => state.updateBookName(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.book.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => state.updateChapter(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.chapter.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => state.updateVerse(),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.resolveWith((states) =>
+                              const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))))),
+                      child: Text(
+                        state.verse.toString(),
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    )
+                  ],
+                )
+              ] +
+              state.bible!
+                  .listTokens(
+                      book: state.book!,
+                      chapter: state.chapter!,
+                      verse: state.verse!)
+                  .map((token) {
+                return Row(
+                  children: [
+                    Text(
+                      token.src,
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                  ],
+                );
+              }).toList() +
+              [
+                // This adds some scroll past stuff
+                const SizedBox(
+                  width: 100,
+                  height: 500,
+                  child: null,
+                )
+              ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return state.book == null
         ? getBooks(context)
         : state.chapter == null
             ? getChapters(context)
-            : getBooks(context);
+            : state.verse == null
+                ? getVerses(context)
+                : getTokens(context);
   }
 }

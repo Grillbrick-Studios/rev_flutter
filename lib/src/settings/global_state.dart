@@ -141,7 +141,7 @@ class GlobalState with ChangeNotifier {
   }
 
   Future updateBookName([String? book]) async {
-    if (book == _book) return;
+    if (_book == book) return;
 
     _book = book;
 
@@ -151,7 +151,7 @@ class GlobalState with ChangeNotifier {
   }
 
   Future updateChapter([int? chapter]) async {
-    if (chapter == chapter) return;
+    if (_chapter == chapter) return;
 
     _chapter = chapter;
 
@@ -161,7 +161,7 @@ class GlobalState with ChangeNotifier {
   }
 
   Future updateVerse([int? verse]) async {
-    if (verse == verse) return;
+    if (_verse == verse) return;
     _verse = verse;
     notifyListeners();
     await _store.updateVerse(verse);
