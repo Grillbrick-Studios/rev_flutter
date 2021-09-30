@@ -6,10 +6,11 @@ import 'pages/home.dart';
 import 'settings/global_state.dart';
 import 'settings/settings_view.dart';
 
-Widget wrapTarget(
-    {required BuildContext context,
-    required RouteSettings routeSettings,
-    required Widget child}) {
+Widget wrapTarget({
+  required BuildContext context,
+  required RouteSettings routeSettings,
+  required Widget child,
+}) {
   return Scaffold(
     appBar: AppBar(
       title: const Text('REV'),

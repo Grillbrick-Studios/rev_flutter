@@ -3,30 +3,78 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fonts.dart' as fonts;
 
+/// An enum for each Resource
+enum Resource {
+  bible,
+  commentary,
+  appendix,
+}
+
+extension IntMaker on Resource {
+  int get toInt {
+    switch (this) {
+      case Resource.bible:
+        return 1;
+      case Resource.commentary:
+        return 2;
+      case Resource.appendix:
+        return 3;
+    }
+  }
+
+  String get asString {
+    switch (this) {
+      case Resource.bible:
+        return 'Bible';
+      case Resource.commentary:
+        return 'Commentary';
+      case Resource.appendix:
+        return 'Appendices';
+    }
+  }
+}
+
+extension ResourceMaker on int {
+  Resource? get toResource {
+    switch (this) {
+      case 1:
+        return Resource.bible;
+      case 2:
+        return Resource.commentary;
+      case 3:
+        return Resource.appendix;
+    }
+  }
+}
+
 double defaultTextSize = 24;
 
 /// Encode a theme into a string.
-String _encodeThemeMode(ThemeMode mode) {
-  switch (mode) {
-    case ThemeMode.dark:
-      return 'dark';
-    case ThemeMode.light:
-      return 'light';
-    case ThemeMode.system:
-      return 'system';
+extension Stringifier on ThemeMode {
+  String get asString {
+    switch (this) {
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.system:
+        return 'system';
+    }
   }
 }
 
 /// Decode a theme from a string.
-ThemeMode _decodeThemeMode(String mode) {
-  switch (mode) {
-    case 'dark':
-      return ThemeMode.dark;
-    case 'light':
-      return ThemeMode.light;
-    case 'system':
-    default:
-      return ThemeMode.system;
+extension Themeifier on String {
+  ThemeMode get toThemeMode {
+    switch (this) {
+      case 'dark':
+        return ThemeMode.dark;
+      case 'light':
+        return ThemeMode.light;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
   }
 }
 
@@ -37,19 +85,19 @@ ThemeMode _decodeThemeMode(String mode) {
 /// you'd like to store settings on a web server, use the http package.
 class StoredState {
   /// Loads the User's preferred ThemeMode from local or remote storage.
-  Future<ThemeMode> get themeMode async {
+  Future get themeMode async {
     try {
       var preferences = await SharedPreferences.getInstance();
-      var themeString = preferences.getString('themeMode') ??
-          _encodeThemeMode(ThemeMode.system);
-      return _decodeThemeMode(themeString);
+      var themeString =
+          preferences.getString('themeMode') ?? (ThemeMode.system.asString);
+      return (themeString.toThemeMode);
     } catch (err) {
       return ThemeMode.system;
     }
   }
 
   /// Loads the User's preferred TextStyle from local or remote storage.
-  Future<TextStyle> get textStyle async {
+  Future get textStyle async {
     try {
       var preferences = await SharedPreferences.getInstance();
       var styleString =
@@ -97,11 +145,34 @@ class StoredState {
     }
   }
 
+  /// Loads the User's last used Resource if it exists.
+  Future get resource async {
+    try {
+      var preferences = await SharedPreferences.getInstance();
+      return preferences.getInt('resource')?.toResource;
+    } catch (err) {
+      return null;
+    }
+  }
+
   /// Persists the user's preferred ThemeMode to local or remote storage.
   Future updateThemeMode(ThemeMode theme) async {
     try {
       var preferences = await SharedPreferences.getInstance();
-      preferences.setString('themeMode', _encodeThemeMode(theme));
+      preferences.setString('themeMode', theme.asString);
+    } catch (err) {
+      throw Exception("Error getting SharedPreferences: $err");
+    }
+  }
+
+  Future updateResource(Resource? resource) async {
+    try {
+      var preferences = await SharedPreferences.getInstance();
+      if (resource == null) {
+        preferences.remove('resource');
+      } else {
+        preferences.setInt('resource', resource.toInt);
+      }
     } catch (err) {
       throw Exception("Error getting SharedPreferences: $err");
     }

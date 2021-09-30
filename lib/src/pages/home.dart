@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rev_flutter/src/modules/nav_header.dart';
 import 'package:rev_flutter/src/settings/global_state.dart';
+import 'package:rev_flutter/src/settings/stored_state.dart';
 
 import '../models/bible.dart';
 
@@ -51,6 +53,41 @@ class Home extends StatelessWidget {
   /// A constructor that gets the global state.
   const Home({Key? key, required this.state}) : super(key: key);
 
+  /// A list of resources to be displayed as buttons
+  Widget getResources(BuildContext context) {
+    if (state.bible != null) {
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            NavHeader(state: state),
+            ...Resource.values
+                .map((e) => TextButton(
+                      onPressed: () => state.updateResource(e),
+                      child: Text(
+                        e.asString,
+                        style: Theme.of(context).textTheme.headline4,
+                      ),
+                    ))
+                .toList(),
+            // This adds some scroll past stuff
+            const SizedBox(
+              width: 100,
+              height: 500,
+              child: null,
+            )
+          ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          'Loading Data...',
+          style: Theme.of(context).textTheme.headline1,
+        ),
+      );
+    }
+  }
+
   /// A list of books to be displayed as buttons
   Widget getBooks(BuildContext context) {
     if (state.bible != null) {
@@ -58,7 +95,8 @@ class Home extends StatelessWidget {
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
-          children: state.bible!.listBooks.map((bookName) {
+          children: <Widget>[NavHeader(state: state)] +
+              state.bible!.listBooks.map((bookName) {
                 List<Widget> heading = [];
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateBookName(bookName),
@@ -122,26 +160,7 @@ class Home extends StatelessWidget {
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
-          children: <Widget>[
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => state.updateBookName(),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.red),
-                          shape: MaterialStateProperty.resolveWith((states) =>
-                              const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(30))))),
-                      child: Text(
-                        state.book.toString(),
-                        style: Theme.of(context).textTheme.headline3,
-                      ),
-                    )
-                  ],
-                )
-              ] +
+          children: <Widget>[NavHeader(state: state)] +
               state.bible!.listChapters(book: state.book!).map((chapter) {
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateChapter(chapter),
@@ -185,40 +204,7 @@ class Home extends StatelessWidget {
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
-          children: <Widget>[
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => state.updateBookName(),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.red),
-                          shape: MaterialStateProperty.resolveWith((states) =>
-                              const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(30))))),
-                      child: Text(
-                        state.book.toString(),
-                        style: Theme.of(context).textTheme.headline3,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => state.updateChapter(),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.red),
-                          shape: MaterialStateProperty.resolveWith((states) =>
-                              const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(30))))),
-                      child: Text(
-                        state.chapter.toString(),
-                        style: Theme.of(context).textTheme.headline3,
-                      ),
-                    )
-                  ],
-                )
-              ] +
+          children: <Widget>[NavHeader(state: state)] +
               state.bible!
                   .listVerses(book: state.book!, chapter: state.chapter!)
                   .map((verse) {
@@ -259,12 +245,14 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return state.book == null
-        ? getBooks(context)
-        : state.chapter == null
-            ? getChapters(context)
-            : state.verse == null
-                ? getVerses(context)
-                : getBooks(context);
+    return state.resource == null
+        ? getResources(context)
+        : state.book == null
+            ? getBooks(context)
+            : state.chapter == null
+                ? getChapters(context)
+                : state.verse == null
+                    ? getVerses(context)
+                    : getVerses(context);
   }
 }

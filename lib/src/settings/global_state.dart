@@ -26,6 +26,10 @@ class GlobalState with ChangeNotifier {
   // without also persisting the changes with the SettingsService.
   late double _textSize;
 
+  // Make user resource private so it is not updated directly without
+  // also persisting and updating the render
+  late Resource? _resource;
+
   // Make the bible data private so it is not updated directly without also
   // persisting the changes.
   late Bible? _bible;
@@ -54,6 +58,8 @@ class GlobalState with ChangeNotifier {
   // Allow Widgets to get bible data.
   Bible? get bible => _bible;
 
+  Resource? get resource => _resource;
+
   String? get book => _book;
 
   int? get chapter => _chapter;
@@ -67,8 +73,9 @@ class GlobalState with ChangeNotifier {
     _themeMode = await _store.themeMode;
     _textStyle = await _store.textStyle;
     _textSize = await _store.textSize;
-    // Load the bible data asyncronously
+    // Load the bible data asynchronously
     _bible = null;
+    _resource = await _store.resource;
     _book = await _store.bookName;
     _chapter = await _store.chapter;
     _verse = await _store.verse;
@@ -140,23 +147,36 @@ class GlobalState with ChangeNotifier {
     _textSize = defaultTextSize;
   }
 
+  Future updateResource([Resource? resource]) async {
+    if (_resource == resource) return;
+    _resource = resource;
+    if (resource == null) {
+      await updateBookName();
+      await updateChapter();
+      await updateVerse();
+    }
+    notifyListeners();
+    await _store.updateResource(resource);
+  }
+
   Future updateBookName([String? book]) async {
     if (_book == book) return;
-
     _book = book;
-
+    if (book == null) {
+      await updateChapter();
+      await updateVerse();
+    }
     notifyListeners();
-
     await _store.updateBookName(book);
   }
 
   Future updateChapter([int? chapter]) async {
     if (_chapter == chapter) return;
-
     _chapter = chapter;
-
+    if (chapter == null) {
+      await updateVerse();
+    }
     notifyListeners();
-
     await _store.updateChapter(chapter);
   }
 
