@@ -57,7 +57,7 @@ class Appendices extends BibleLike {
           return await Appendices._fetch;
         }
       } catch (err) {
-        throw Exception("Error loading bible! $err");
+        throw Exception("Error loading appendix! $err");
       }
     } else {
       File file = await localFile(_fileName);

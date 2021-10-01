@@ -132,7 +132,7 @@ extension EnumConverter on int {
   }
 }
 
-late Commentary? _commentary;
+Commentary? _commentary;
 
 class Verse implements VerseLike {
   @override
@@ -208,7 +208,7 @@ class Verse implements VerseLike {
 
     // Generate a verse number link to commentary
     final commentaryLink = hasCommentary && linkCommentary
-        ? '<sup><commentary-link verse=$verse/></sup>'
+        ? '<sup><a href=$verse/></sup>'
         : '<sup>$verse</sup>';
 
     return '$commentaryLink $versetext';

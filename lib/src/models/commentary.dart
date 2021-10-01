@@ -19,18 +19,29 @@ WordMap _getWords(List<Comment> verses) {
 
 class Comment implements VerseLike {
   @override
-  final String book;
+  late final String book;
   @override
-  final int chapter;
+  late final int chapter;
   @override
-  final int verse;
-  final String commentary;
+  late final int verse;
+  late final String commentary;
 
-  Comment.fromJson(Map<String, dynamic> json)
-      : book = json['book'],
-        chapter = json['chapter'],
-        verse = json['verse'],
-        commentary = json['commentary'];
+  Comment.fromJson(Map<String, dynamic> json) {
+    book = json['book'];
+    var c = json['chapter'];
+    if (c.runtimeType == String) {
+      chapter = int.parse(c);
+    } else {
+      chapter = c;
+    }
+    var v = json['verse'];
+    if (v.runtimeType == String) {
+      verse = int.parse(v);
+    } else {
+      verse = v;
+    }
+    commentary = json['commentary'];
+  }
 
   Map<String, dynamic> get json => {
         'book': book,
@@ -58,7 +69,7 @@ class Commentary extends BibleLike {
           return await Commentary._fetch;
         }
       } catch (err) {
-        throw Exception("Error loading bible! $err");
+        throw Exception("Error loading commentary! $err");
       }
     } else {
       File file = await localFile(_fileName);

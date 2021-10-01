@@ -207,12 +207,20 @@ class Home extends StatelessWidget {
         ? getResources(context)
         : state.book == null
             ? getBooks(context)
-            : state.chapter == null
-                ? getChapters(context)
-                : state.resource == Resource.bible
-                    ? getChapter(context)
-                    : state.verse == null
-                        ? getVerses(context)
-                        : getVerses(context);
+            : state.resource == Resource.bible
+                ? getAppendix(context)
+                : state.chapter == null
+                    ? getChapters(context)
+                    : state.resource == Resource.bible
+                        ? getChapter(context)
+                        : state.verse == null
+                            ? getVerses(context)
+                            : getVerses(context);
+  }
+
+  getAppendix(BuildContext context) {
+    if (state.appendix == null) return const LoadingScreen();
+    final appendix = state.appendix!;
+    return Html(data: appendix.getAppendix(state.book!));
   }
 }

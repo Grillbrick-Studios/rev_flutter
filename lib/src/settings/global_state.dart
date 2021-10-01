@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rev_flutter/src/models/appendices.dart';
 import 'package:rev_flutter/src/models/bible.dart';
+import 'package:rev_flutter/src/models/commentary.dart';
 
 import 'stored_state.dart';
 
@@ -34,6 +36,10 @@ class GlobalState with ChangeNotifier {
   // persisting the changes.
   late Bible? _bible;
 
+  late Appendices? _appendix;
+
+  late Commentary? _commentary;
+
   BiblePath? get path =>
       _book != null ? BiblePath(_book!, _chapter, _verse) : null;
 
@@ -61,6 +67,10 @@ class GlobalState with ChangeNotifier {
   // Allow Widgets to get bible data.
   Bible? get bible => _bible;
 
+  Appendices? get appendix => _appendix;
+
+  Commentary? get commentary => _commentary;
+
   Resource? get resource => _resource;
 
   String? get book => _book;
@@ -78,12 +88,22 @@ class GlobalState with ChangeNotifier {
     _textSize = await _store.textSize;
     // Load the bible data asynchronously
     _bible = null;
+    _commentary = null;
+    _appendix = null;
     _resource = await _store.resource;
     _book = await _store.bookName;
     _chapter = await _store.chapter;
     _verse = await _store.verse;
     Bible.load.then((b) {
       _bible = b;
+      notifyListeners();
+    });
+    Appendices.load.then((a) {
+      _appendix = a;
+      notifyListeners();
+    });
+    Commentary.load.then((c) {
+      _commentary = c;
       notifyListeners();
     });
 
