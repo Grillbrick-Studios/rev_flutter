@@ -161,7 +161,7 @@ class Home extends StatelessWidget {
           spacing: 20,
           runSpacing: 20,
           children: <Widget>[NavHeader(state: state)] +
-              state.bible!.listChapters(book: state.book!).map((chapter) {
+              state.bible!.listChapters(state.path!).map((chapter) {
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateChapter(chapter),
                   style: ButtonStyle(
@@ -205,9 +205,7 @@ class Home extends StatelessWidget {
           spacing: 20,
           runSpacing: 20,
           children: <Widget>[NavHeader(state: state)] +
-              state.bible!
-                  .listVerses(book: state.book!, chapter: state.chapter!)
-                  .map((verse) {
+              state.bible!.listVerses(state.path!).map((verse) {
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateVerse(verse),
                   style: ButtonStyle(

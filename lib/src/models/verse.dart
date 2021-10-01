@@ -1,3 +1,5 @@
+import 'package:rev_flutter/src/models/bible.dart';
+
 import 'words.dart';
 
 enum Style {
@@ -129,9 +131,12 @@ extension EnumConverter on int {
   }
 }
 
-class Verse {
+class Verse implements VerseLike {
+  @override
   final String book;
+  @override
   final int chapter;
+  @override
   final int verse;
   final String? heading;
   final bool microheading;

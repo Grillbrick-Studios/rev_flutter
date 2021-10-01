@@ -34,6 +34,9 @@ class GlobalState with ChangeNotifier {
   // persisting the changes.
   late Bible? _bible;
 
+  BiblePath? get path =>
+      _book != null ? BiblePath(_book!, _chapter, _verse) : null;
+
   // Make the book name private so it is not updated directly without also
   // persisting the changes.
   late String? _book;
