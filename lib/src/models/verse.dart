@@ -1,5 +1,6 @@
 import 'package:rev_flutter/src/models/bible.dart';
 
+import 'commentary.dart';
 import 'words.dart';
 
 enum Style {
@@ -131,6 +132,8 @@ extension EnumConverter on int {
   }
 }
 
+late Commentary? _commentary;
+
 class Verse implements VerseLike {
   @override
   final String book;
@@ -145,8 +148,9 @@ class Verse implements VerseLike {
   final String? footnotes;
   final String versetext;
 
-  // TODO: add commentary check
-  bool get hasCommentary => false;
+  BiblePath get path => BiblePath(book, chapter, verse);
+
+  bool get hasCommentary => _commentary?.listVerses(path).isNotEmpty ?? false;
 
   const Verse({
     required this.book,
@@ -169,7 +173,11 @@ class Verse implements VerseLike {
         microheading = json['microheading'] == 1,
         paragraph = json['paragraph'] == 1,
         versetext = json['versetext'],
-        style = (json['style'] as int).toStyle;
+        style = (json['style'] as int).toStyle {
+    if (_commentary == null) {
+      Commentary.load.then((c) => _commentary = c);
+    }
+  }
 
   Map<String, dynamic> get json => {
         'book': book,

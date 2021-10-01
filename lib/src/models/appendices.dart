@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:rev_flutter/src/models/bible.dart';
 
 import 'idb_file.dart';
 
@@ -10,7 +11,7 @@ const _fileName = 'appendices';
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=203';
 
-class _Appendix {
+class _Appendix implements VerseLike {
   final String title;
   final String appendix;
 
@@ -27,9 +28,18 @@ class _Appendix {
         'title': title,
         'appendix': appendix,
       };
+
+  @override
+  String get book => title;
+
+  @override
+  int get chapter => 0;
+
+  @override
+  int get verse => 0;
 }
 
-class Appendices {
+class Appendices extends BibleLike {
   final List<_Appendix> _data;
   List<_Appendix> get data => _data;
 
@@ -82,30 +92,20 @@ class Appendices {
 
   String get encoded => _encodeAppendix(_data);
 
-  List<String> get titles => _data.map((a) => a.title).toList();
-
   String getAppendix(String title) =>
       _data.firstWhere((a) => a.title == title).appendix;
 
-  String next(String title) {
-    try {
-      final index = titles.indexOf(title);
-      if (titles.length > index + 1) return titles[index + 1];
-      return title;
-    } catch (err) {
-      return title;
-    }
-  }
+  @override
+  List<String> get listBooks => _data.map((a) => a.title).toList();
 
-  String prev(String title) {
-    try {
-      final index = titles.indexOf(title);
-      if (index > 0) return titles[index - 1];
-      return title;
-    } catch (err) {
-      return title;
-    }
-  }
+  @override
+  List<int> listChapters(BiblePath path) => [];
+
+  @override
+  List<int> listVerses(BiblePath path) => [];
+
+  @override
+  List<VerseLike> selectVerses(BiblePath path) => [];
 }
 
 String _encodeAppendix(List<_Appendix> data) {
