@@ -12,6 +12,46 @@ const _fileName = 'bible';
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=201';
 
+/// Exceptions to throw when parsing verses or VerseLike data
+class BibleLikeException implements Exception {
+  final String? msg;
+  final BibleLike caller;
+
+  const BibleLikeException(this.caller, [this.msg]);
+
+  @override
+  String toString() => msg ?? 'A bad path was sent to $caller';
+}
+
+class BadBiblePathException extends BibleLikeException {
+  BadBiblePathException(BibleLike caller, [String? msg]) : super(caller, msg);
+
+  @override
+  String toString() => msg ?? 'A bad path was sent to $caller';
+}
+
+class BookNotFoundException extends BibleLikeException {
+  BookNotFoundException(BibleLike caller, [String? msg]) : super(caller, msg);
+
+  @override
+  String toString() => msg ?? 'The book sent to $caller was not found';
+}
+
+class ChapterNotFoundException extends BibleLikeException {
+  ChapterNotFoundException(BibleLike caller, [String? msg])
+      : super(caller, msg);
+
+  @override
+  String toString() => msg ?? 'The chapter sent to $caller was not found';
+}
+
+class VerseNotFoundException extends BibleLikeException {
+  VerseNotFoundException(BibleLike caller, [String? msg]) : super(caller, msg);
+
+  @override
+  String toString() => msg ?? 'The verse sent to $caller was not found';
+}
+
 List<Verse> _parseVerses(String responseBody) {
   final parsed = jsonDecode(responseBody);
 
@@ -37,7 +77,6 @@ abstract class VerseLike {
 abstract class BibleLike {
   const BibleLike();
 
-  // TODO: Double check these methods.
   /// List all the books that this bible like object has.
   List<String> get listBooks;
 
@@ -60,154 +99,164 @@ abstract class BibleLike {
   /// If no verse is given then the first verse is assumed.
   bool hasNextVerse(BiblePath path) {
     if (path.chapter == null) {
-      throw Exception('A chapter is required for hasNextVerse');
+      throw BadBiblePathException(this);
     }
     final verses = listVerses(BiblePath(path.book, path.chapter));
     final verse = path.verse ?? verses.first;
     final index = verses.indexOf(verse);
     if (index == -1) {
-      throw Exception("Invalid book name sent to hasNextVerse");
+      throw VerseNotFoundException(this);
     }
     return verses.length > index + 1;
   }
 
   /// Determine if a BibleLike has a previous verse in the current chapter.
   /// Requires a chapter or an exception is thrown.
+  /// Also throws an exception if the chapter is invalid.
   /// If no verse is given then the last verse is assumed.
   bool hasPrevVerse(BiblePath path) {
-    try {
-      final verses = listVerses(BiblePath(path.book, path.chapter));
-      final verse = path.verse ?? verses.last;
-      final index = verses.indexOf(verse);
-      return index > 0;
-    } catch (_) {
-      return false;
+    if (path.chapter == null) {
+      throw BadBiblePathException(this);
     }
+    final verses = listVerses(BiblePath(path.book, path.chapter));
+    final verse = path.verse ?? verses.last;
+    final index = verses.indexOf(verse);
+    if (index == -1) {
+      throw VerseNotFoundException(this);
+    }
+    return index > 0;
   }
 
   /// Determine if a BibleLike has a next chapter in the current book.
   /// If no chapter is given then the first chapter is assumed.
+  /// Throws a ChapterNotFoundException if the chapter isn't found.
   bool hasNextChapter(BiblePath path) {
-    try {
-      final chapter = path.chapter ?? 1;
-      final chapters = listChapters(path);
-      final index = chapters.indexOf(chapter);
-      return chapters.length > index + 1;
-    } catch (_) {
-      return false;
-    }
+    final chapters = listChapters(path);
+    final chapter = path.chapter ?? chapters.first;
+    final index = chapters.indexOf(chapter);
+    if (index == -1) throw ChapterNotFoundException(this);
+    return chapters.length > index + 1;
   }
 
   /// Determine if a BibleLike has a previous chapter in the current book.
   /// If no chapter is given then the last chapter is assumed.
+  /// Throws a ChapterNotFoundException if the chapter isn't found.
   bool hasPrevChapter(BiblePath path) {
-    try {
-      final chapters = listChapters(path);
-      final chapter = path.chapter ?? chapters.last;
-      final index = chapters.indexOf(chapter);
-      return index > 0;
-    } catch (_) {
-      return false;
-    }
+    final chapters = listChapters(path);
+    final chapter = path.chapter ?? chapters.last;
+    final index = chapters.indexOf(chapter);
+    if (index == -1) throw ChapterNotFoundException(this);
+    return index > 0;
   }
 
   /// Determine if a BibleLike has another book in it.
   bool hasNextBook(BiblePath path) {
-    try {
-      final index = listBooks.indexOf(path.book);
-      return listBooks.length > index + 1;
-    } catch (_) {
-      return false;
-    }
+    final index = listBooks.indexOf(path.book);
+    if (index == -1) throw BookNotFoundException(this);
+    return listBooks.length > index + 1;
   }
 
   /// Determine if a BibleLike has a book before the current one.
   bool hasPrevBook(BiblePath path) {
-    try {
-      final index = listBooks.indexOf(path.book);
-      return index > 0;
-    } catch (_) {
-      return false;
-    }
+    final index = listBooks.indexOf(path.book);
+    if (index == -1) throw BookNotFoundException(this);
+    return index > 0;
   }
 
   /// Checks if a bibleLike has a next book and then returns it
-  /// with the first chapter selected. If not returns the original path.
+  /// with the first chapter and verse selected. If not returns the original path.
   BiblePath getNextBook(BiblePath path) {
+    if (!hasNextBook(path)) return path;
     final index = listBooks.indexOf(path.book);
     final book = listBooks[index + 1];
     return BiblePath(book, listChapters(path).first, listVerses(path).first);
   }
 
-  /// Checks if a biblelike has a next chapter in the current book.
-  /// If not it returns falls back to getNextBook()
+  /// Checks if a biblelike has a next chapter in the current book
+  /// with first verse selected.
+  /// If not it falls back to getNextBook()
+  /// If the chapter isn't defined return the first chapter of the given book.
   BiblePath getNextChapter(BiblePath path) {
+    if (!hasNextChapter(path)) return getNextBook(path);
     if (path.chapter == null) {
-      return BiblePath(path.book, listChapters(path).first);
+      return BiblePath(
+          path.book, listChapters(path).first, listVerses(path).first);
     }
     final chapters = listChapters(path);
-    if (chapters.contains(path.chapter! + 1)) {
-      return BiblePath(path.book, path.chapter! + 1);
-    }
-    return getNextBook(path);
+    final index = chapters.indexOf(path.chapter!);
+    final chapter = chapters[index + 1];
+    return BiblePath(
+        path.book, chapter, listVerses(BiblePath(path.book, chapter)).first);
   }
 
   /// Checks if a biblelike has a next verse in the current chapter.
-  /// Throws an exception if a chapter is not provided.
+  /// If no chapter is provided gives the first verse of the first chapter.
   /// Returns the next verse if there is one or falls back to getNextChapter().
   BiblePath getNextVerse(BiblePath path) {
-    try {
-      if (path.chapter == null) {
-        return BiblePath(
-            path.book, listChapters(path).first, listVerses(path).first);
-      }
-      if (path.verse == null) {
-        return BiblePath(path.book, path.chapter, listVerses(path).first);
-      }
-      final verses = listVerses(path);
-      final index = verses.indexOf(path.verse!);
-      return BiblePath(path.book, path.chapter, verses[index + 1]);
-    } catch (err) {
-      throw Exception('Invalid Path in GetNextVerse: $err');
+    if (path.chapter == null) {
+      return BiblePath(
+          path.book, listChapters(path).first, listVerses(path).first);
     }
+    if (path.verse == null) {
+      return BiblePath(path.book, path.chapter, listVerses(path).first);
+    }
+    final verses = listVerses(path);
+    final index = verses.indexOf(path.verse!);
+    if (index == -1) return getNextChapter(path);
+    return BiblePath(path.book, path.chapter, verses[index + 1]);
   }
 
   /// Checks if a bibleLike has a previous book and then returns it
   /// with the last chapter selected. If not returns the original path.
+  /// Invalid book will return the last verse of the last chapter of the last book.
   BiblePath getPrevBook(BiblePath path) {
     final index = listBooks.indexOf(path.book);
+    if (index == -1) {
+      final books = listBooks;
+      final book = books.last;
+      final chapter = listChapters(BiblePath(book)).last;
+      final verse = listVerses(BiblePath(book, chapter)).last;
+      return BiblePath(book, chapter, verse);
+    }
     final book = listBooks[index - 1];
-    return BiblePath(book, listChapters(path).first, listVerses(path).first);
+    final chapters = listChapters(BiblePath(book));
+    final chapter = chapters.last;
+    final verse = listVerses(BiblePath(book, chapter)).last;
+    return BiblePath(book, chapter, verse);
   }
 
   /// Checks if a biblelike has a previous chapter in the current book.
-  /// If not it returns falls back to getPrevBook()
+  /// If not it falls back to getPrevBook().
+  /// If no chapter is specified or the specified chapter isn't found it
+  /// will return the last verse of the last chapter.
   BiblePath getPrevChapter(BiblePath path) {
-    if (path.chapter == null) return BiblePath(path.book, 1);
-    final chapters = listChapters(path);
-    if (chapters.contains(path.chapter! - 1)) {
-      return BiblePath(path.book, path.chapter! - 1);
-    } else {
-      final books = listBooks;
-      final index = books.indexOf(path.book);
-      if (index - 1 >= 0) {
-        final chapters = listChapters(path);
-        return BiblePath(
-          books[index - 1],
-          chapters[chapters.length - 1], // chapter
-        );
-      } else {
-        return path;
-      }
+    if (!hasPrevChapter(path)) return getPrevBook(path);
+    if (path.chapter == null) {
+      return BiblePath(
+          path.book, listChapters(path).last, listVerses(path).last);
     }
+    final chapters = listChapters(path);
+    final index = chapters.indexOf(path.chapter!);
+    final chapter = chapters[index - 1];
+    final newPath = BiblePath(path.book, chapter);
+    return BiblePath(path.book, chapter, listVerses(newPath).last);
   }
 
   /// Checks if a biblelike has a previous verse in the current chapter.
   /// Throws an exception if a chapter is not provided.
   /// Returns the previous verse if there is one or falls back to getPrevChapter().
   BiblePath getPrevVerse(BiblePath path) {
-    // TODO: Implement this method.
-    return path;
+    if (path.chapter == null) {
+      return BiblePath(
+          path.book, listChapters(path).last, listVerses(path).last);
+    }
+    if (path.verse == null) {
+      return BiblePath(path.book, path.chapter, listVerses(path).last);
+    }
+    final verses = listVerses(path);
+    final index = verses.indexOf(path.verse!);
+    if (index == -1) return getPrevChapter(path);
+    return BiblePath(path.book, path.chapter, verses[index - 1]);
   }
 }
 
@@ -307,7 +356,7 @@ class Bible extends BibleLike {
     ViewMode viewMode = ViewMode.paragraph,
     bool linkCommentary = true,
   }) {
-    if (path.chapter == null) throw Exception('Chapter Not Selected!');
+    if (path.chapter == null) throw BadBiblePathException(this);
     var spanDepth = 0;
     final verses = selectVerses(path);
     var result = '';
