@@ -29,3 +29,7 @@ extension Words on WordMap {
     return map;
   }
 }
+
+extension IntoWords on List<Verse> {
+  WordMap get words => Words.fromVerses(this);
+}

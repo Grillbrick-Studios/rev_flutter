@@ -21,6 +21,31 @@ enum Style {
   listPreGapNoPostGap,
 }
 
+extension Classify on Style {
+  String get className {
+    switch (this) {
+      case Style.prose:
+        return 'prose';
+      case Style.poetry:
+        return 'poetry';
+      case Style.poetryNoPostGap:
+        return 'poetry no-post-gap';
+      case Style.poetryPreGap:
+        return 'poetry pre-gap';
+      case Style.poetryPreGapNoPostGap:
+        return 'poetry pre-gap-no-post-gap';
+      case Style.list:
+        return 'list';
+      case Style.listNoPostGap:
+        return 'list no-post-gap';
+      case Style.listPreGap:
+        return 'list pre-gap';
+      case Style.listPreGapNoPostGap:
+        return 'list pre-gap-no-post-gap';
+    }
+  }
+}
+
 enum ViewMode {
   paragraph,
   verseBreak,
@@ -65,17 +90,6 @@ extension StyleConverter on Style {
   }
 }
 
-// int viewModeToInt(ViewMode mode) {
-//   switch (mode) {
-//     case ViewMode.paragraph:
-//       return 1;
-//     case ViewMode.verseBreak:
-//       return 2;
-//     case ViewMode.reading:
-//       return 3;
-//   }
-// }
-
 extension EnumConverter on int {
   Style get toStyle {
     switch (this) {
@@ -115,42 +129,21 @@ extension EnumConverter on int {
   }
 }
 
-// int _styleToInt(Style style) {
-//   switch (style) {
-//     case Style.poetry:
-//       return 2;
-//     case Style.poetryNoPostGap:
-//       return 3;
-//     case Style.poetryPreGap:
-//       return 4;
-//     case Style.poetryPreGapNoPostGap:
-//       return 5;
-//     case Style.list:
-//       return 6;
-//     case Style.listNoPostGap:
-//       return 7;
-//     case Style.listPreGap:
-//       return 8;
-//     case Style.listPreGapNoPostGap:
-//       return 9;
-//     case Style.prose:
-//     default:
-//       return 1;
-//   }
-// }
-
 class Verse {
-  String book;
-  int chapter;
-  int verse;
-  String? heading;
-  bool microheading;
-  bool paragraph;
-  Style style;
-  String? footnotes;
-  String versetext;
+  final String book;
+  final int chapter;
+  final int verse;
+  final String? heading;
+  final bool microheading;
+  final bool paragraph;
+  final Style style;
+  final String? footnotes;
+  final String versetext;
 
-  Verse({
+  // TODO: add commentary check
+  bool get hasCommentary => false;
+
+  const Verse({
     required this.book,
     required this.chapter,
     required this.verse,
@@ -173,7 +166,7 @@ class Verse {
         versetext = json['versetext'],
         style = (json['style'] as int).toStyle;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> get json => {
         'book': book,
         'chapter': chapter,
         'verse': verse,
@@ -186,4 +179,37 @@ class Verse {
       };
 
   WordMap get words => Words.fromVerse(this);
+
+  String get styledHeading {
+    if (this.heading == null) return '';
+
+    final heading = this.heading!.replaceAll('[br]', '<br/>');
+    return '<p class="${microheading ? 'microheading' : 'heading'}">$heading</p>';
+  }
+
+  String raw({
+    ViewMode viewMode = ViewMode.paragraph,
+    bool linkCommentary = true,
+  }) {
+    if (viewMode == ViewMode.reading) return versetext;
+
+    // Generate a verse number link to commentary
+    final commentaryLink = hasCommentary && linkCommentary
+        ? '<sup><commentary-link verse=$verse/></sup>'
+        : '<sup>$verse</sup>';
+
+    return '$commentaryLink $versetext';
+  }
+
+  bool get isPoetry {
+    switch (style) {
+      case Style.poetry:
+      case Style.poetryNoPostGap:
+      case Style.poetryPreGap:
+      case Style.poetryPreGapNoPostGap:
+        return true;
+      default:
+        return false;
+    }
+  }
 }

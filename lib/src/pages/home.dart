@@ -32,7 +32,7 @@ class _HelloWorldState extends State<HelloWorld> {
             .toList(),
       );
     } else {
-      Bible.load().then((b) => setState(() {
+      Bible.load.then((b) => setState(() {
             bible = b;
           }));
       return Center(

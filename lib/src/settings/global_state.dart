@@ -79,7 +79,7 @@ class GlobalState with ChangeNotifier {
     _book = await _store.bookName;
     _chapter = await _store.chapter;
     _verse = await _store.verse;
-    Bible.load().then((b) {
+    Bible.load.then((b) {
       _bible = b;
       notifyListeners();
     });
