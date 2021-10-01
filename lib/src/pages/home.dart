@@ -1,47 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:rev_flutter/src/modules/nav_header.dart';
 import 'package:rev_flutter/src/settings/global_state.dart';
 import 'package:rev_flutter/src/settings/stored_state.dart';
 
-import '../models/bible.dart';
-
-/// A simple Widget that presents a hello world screen.
-class HelloWorld extends StatefulWidget {
-  const HelloWorld({
-    Key? key,
-  }) : super(key: key);
-
-  static const routeName = '/';
-
-  @override
-  State<HelloWorld> createState() => _HelloWorldState();
-}
-
-class _HelloWorldState extends State<HelloWorld> {
-  Bible? bible;
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (bible != null) {
-      return ListView(
-        children: bible!.listBooks
-            .map((b) => Text(
-                  b,
-                  style: Theme.of(context).textTheme.headline1,
-                ))
-            .toList(),
-      );
-    } else {
-      Bible.load.then((b) => setState(() {
-            bible = b;
-          }));
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
-        ),
-      );
-    }
+    return Center(
+      child: Text(
+        'Loading Data...',
+        style: Theme.of(context).textTheme.headline1,
+      ),
+    );
   }
 }
 
@@ -79,12 +52,7 @@ class Home extends StatelessWidget {
         ),
       );
     } else {
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
-        ),
-      );
+      return const LoadingScreen();
     }
   }
 
@@ -144,12 +112,7 @@ class Home extends StatelessWidget {
         ),
       );
     } else {
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
-        ),
-      );
+      return const LoadingScreen();
     }
   }
 
@@ -188,12 +151,7 @@ class Home extends StatelessWidget {
         ),
       );
     } else {
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
-        ),
-      );
+      return const LoadingScreen();
     }
   }
 
@@ -232,13 +190,15 @@ class Home extends StatelessWidget {
         ),
       );
     } else {
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: Theme.of(context).textTheme.headline1,
-        ),
-      );
+      return const LoadingScreen();
     }
+  }
+
+  /// Displays the chapter in an HTML view.
+  Widget getChapter(BuildContext context) {
+    if (state.bible == null) return const LoadingScreen();
+    final bible = state.bible!;
+    return Html(data: bible.getChapter(state.path!));
   }
 
   @override
@@ -249,8 +209,10 @@ class Home extends StatelessWidget {
             ? getBooks(context)
             : state.chapter == null
                 ? getChapters(context)
-                : state.verse == null
-                    ? getVerses(context)
-                    : getVerses(context);
+                : state.resource == Resource.bible
+                    ? getChapter(context)
+                    : state.verse == null
+                        ? getVerses(context)
+                        : getVerses(context);
   }
 }
