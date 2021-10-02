@@ -207,7 +207,7 @@ class Home extends StatelessWidget {
         ? getResources(context)
         : state.book == null
             ? getBooks(context)
-            : state.resource == Resource.bible
+            : state.resource == Resource.appendix
                 ? getAppendix(context)
                 : state.chapter == null
                     ? getChapters(context)

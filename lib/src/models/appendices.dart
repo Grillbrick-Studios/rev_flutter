@@ -40,19 +40,23 @@ class _Appendix implements VerseLike {
 }
 
 class Appendices extends BibleLike {
-  final List<_Appendix> _data;
+  static List<_Appendix> _data = [];
   List<_Appendix> get data => _data;
 
-  const Appendices(this._data);
+  Appendices() {
+    if (Appendices._data.isEmpty) Appendices.load;
+  }
 
   static Future<Appendices> get load async {
+    if (Appendices._data.isNotEmpty) Appendices();
     if (kIsWeb) {
       try {
         IdbFile file = const IdbFile(_fileName);
         if (await file.exists()) {
           String contents = await file.readAsString();
           var verses = _parseAppendix(contents);
-          return Appendices(verses);
+          _data = verses;
+          return Appendices();
         } else {
           return await Appendices._fetch;
         }
@@ -64,7 +68,8 @@ class Appendices extends BibleLike {
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseAppendix(contents);
-        return Appendices(verses);
+        _data = verses;
+        return Appendices();
       } else {
         return await Appendices._fetch;
       }
@@ -73,7 +78,8 @@ class Appendices extends BibleLike {
 
   static Future<Appendices> get _fetch async {
     var response = await http.get(Uri.parse(_url));
-    var bible = Appendices(await compute(_parseAppendix, response.body));
+    _data = await compute(_parseAppendix, response.body);
+    var bible = Appendices();
     await bible.save();
     return bible;
   }

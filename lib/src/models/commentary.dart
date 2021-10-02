@@ -52,19 +52,23 @@ class Comment implements VerseLike {
 }
 
 class Commentary extends BibleLike {
-  final List<Comment> _data;
+  static List<Comment> _data = [];
   List<Comment> get data => _data;
 
-  const Commentary(this._data);
+  Commentary() {
+    if (Commentary._data.isEmpty) Commentary.load;
+  }
 
   static Future<Commentary> get load async {
+    if (Commentary._data.isNotEmpty) return Commentary();
     if (kIsWeb) {
       try {
         IdbFile file = const IdbFile(_fileName);
         if (await file.exists()) {
           String contents = await file.readAsString();
           var verses = _parseComments(contents);
-          return Commentary(verses);
+          Commentary._data = verses;
+          return Commentary();
         } else {
           return await Commentary._fetch;
         }
@@ -76,7 +80,8 @@ class Commentary extends BibleLike {
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseComments(contents);
-        return Commentary(verses);
+        Commentary._data = verses;
+        return Commentary();
       } else {
         return await Commentary._fetch;
       }
@@ -85,7 +90,8 @@ class Commentary extends BibleLike {
 
   static Future<Commentary> get _fetch async {
     var response = await http.get(Uri.parse(_url));
-    var commentary = Commentary(await compute(_parseComments, response.body));
+    Commentary._data = await compute(_parseComments, response.body);
+    var commentary = Commentary();
     await commentary.save();
     return commentary;
   }

@@ -278,19 +278,23 @@ class BiblePath {
 WordMap _words = {};
 
 class Bible extends BibleLike {
-  final List<Verse> _data;
+  static List<Verse> _data = [];
   List<Verse> get data => _data;
 
-  const Bible(this._data) : super();
+  Bible() {
+    if (Bible._data.isEmpty) Bible.load;
+  }
 
   static Future<Bible> get load async {
+    if (Bible._data.isNotEmpty) return Bible();
     if (kIsWeb) {
       try {
         IdbFile file = const IdbFile(_fileName);
         if (await file.exists()) {
           String contents = await file.readAsString();
           var verses = _parseVerses(contents);
-          return Bible(verses);
+          Bible._data = verses;
+          return Bible();
         } else {
           return await Bible._fetch;
         }
@@ -302,7 +306,8 @@ class Bible extends BibleLike {
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseVerses(contents);
-        return Bible(verses);
+        Bible._data = verses;
+        return Bible();
       } else {
         return await Bible._fetch;
       }
@@ -311,7 +316,8 @@ class Bible extends BibleLike {
 
   static Future<Bible> get _fetch async {
     var response = await http.get(Uri.parse(_url));
-    var bible = Bible(await compute(_parseVerses, response.body));
+    Bible._data = await compute(_parseVerses, response.body);
+    var bible = Bible();
     await bible.save();
     return bible;
   }
