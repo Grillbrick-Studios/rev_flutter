@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:rev_flutter/src/models/bible.dart';
 import 'package:rev_flutter/src/modules/nav_header.dart';
 import 'package:rev_flutter/src/settings/global_state.dart';
 import 'package:rev_flutter/src/settings/stored_state.dart';
@@ -58,13 +59,28 @@ class Home extends StatelessWidget {
 
   /// A list of books to be displayed as buttons
   Widget getBooks(BuildContext context) {
-    if (state.bible != null) {
+    final BibleLike? resource;
+    switch (state.resource) {
+      case Resource.bible:
+        resource = state.bible;
+        break;
+      case Resource.commentary:
+        resource = state.commentary;
+        break;
+      case Resource.appendix:
+        resource = state.appendix;
+        break;
+      default:
+        resource = null;
+        break;
+    }
+    if (resource != null) {
       return SingleChildScrollView(
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
           children: <Widget>[NavHeader(state: state)] +
-              state.bible!.listBooks.map((bookName) {
+              resource.listBooks.map((bookName) {
                 List<Widget> heading = [];
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateBookName(bookName),
@@ -118,13 +134,28 @@ class Home extends StatelessWidget {
 
   /// A list of chapters to be displayed as buttons
   Widget getChapters(BuildContext context) {
-    if (state.bible != null) {
+    final BibleLike? resource;
+    switch (state.resource) {
+      case Resource.bible:
+        resource = state.bible;
+        break;
+      case Resource.commentary:
+        resource = state.commentary;
+        break;
+      case Resource.appendix:
+        resource = state.appendix;
+        break;
+      default:
+        resource = null;
+        break;
+    }
+    if (resource != null) {
       return SingleChildScrollView(
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
           children: <Widget>[NavHeader(state: state)] +
-              state.bible!.listChapters(state.path!).map((chapter) {
+              resource.listChapters(state.path!).map((chapter) {
                 Widget btnWidget = TextButton(
                   onPressed: () => state.updateChapter(chapter),
                   style: ButtonStyle(
@@ -157,48 +188,92 @@ class Home extends StatelessWidget {
 
   /// A list of verses to be displayed as buttons
   Widget getVerses(BuildContext context) {
-    if (state.bible != null) {
-      return SingleChildScrollView(
-        child: Wrap(
-          spacing: 20,
-          runSpacing: 20,
-          children: <Widget>[NavHeader(state: state)] +
-              state.bible!.listVerses(state.path!).map((verse) {
-                Widget btnWidget = TextButton(
-                  onPressed: () => state.updateVerse(verse),
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
-                      shape: MaterialStateProperty.resolveWith((states) =>
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30))))),
-                  child: Text(
-                    verse.toString(),
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                );
-                return btnWidget;
-              }).toList() +
-              [
-                // This adds some scroll past stuff
-                const SizedBox(
-                  width: 100,
-                  height: 500,
-                  child: null,
-                )
-              ],
-        ),
-      );
-    } else {
+    final BibleLike? resource;
+    switch (state.resource) {
+      case Resource.bible:
+        resource = state.bible;
+        break;
+      case Resource.commentary:
+        resource = state.commentary;
+        break;
+      case Resource.appendix:
+        resource = state.appendix;
+        break;
+      default:
+        resource = null;
+        break;
+    }
+    if (resource == null) {
       return const LoadingScreen();
     }
+    return SingleChildScrollView(
+      child: Wrap(
+        spacing: 20,
+        runSpacing: 20,
+        children: <Widget>[NavHeader(state: state)] +
+            resource.listVerses(state.path!).map((verse) {
+              Widget btnWidget = TextButton(
+                onPressed: () => state.updateVerse(verse),
+                style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.blue),
+                    shape: MaterialStateProperty.resolveWith((states) =>
+                        const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))))),
+                child: Text(
+                  verse.toString(),
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+              );
+              return btnWidget;
+            }).toList() +
+            [
+              // This adds some scroll past stuff
+              const SizedBox(
+                width: 100,
+                height: 500,
+                child: null,
+              )
+            ],
+      ),
+    );
   }
 
   /// Displays the chapter in an HTML view.
   Widget getChapter(BuildContext context) {
-    if (state.bible == null) return const LoadingScreen();
+    final BibleLike? resource;
+    switch (state.resource) {
+      case Resource.bible:
+        resource = state.bible;
+        break;
+      case Resource.commentary:
+        resource = state.commentary;
+        break;
+      case Resource.appendix:
+        resource = state.appendix;
+        break;
+      default:
+        resource = null;
+        break;
+    }
+    if (resource == null) return const LoadingScreen();
     final bible = state.bible!;
-    return Html(data: bible.getChapter(state.path!));
+    return Wrap(
+      spacing: 20,
+      runSpacing: 20,
+      children: <Widget>[
+        NavHeader(state: state),
+        SingleChildScrollView(
+          child: Html(data: bible.getChapter(state.path!)),
+        ),
+        // This adds some scroll past stuff
+        const SizedBox(
+          width: 100,
+          height: 500,
+          child: null,
+        )
+      ],
+    );
   }
 
   @override
