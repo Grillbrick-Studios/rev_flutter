@@ -3,61 +3,29 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:rev_flutter/src/models/commentary.dart';
 import 'package:rev_flutter/src/models/words.dart';
 
+import 'exceptions.dart';
 import 'idb_file.dart';
 import 'verse.dart';
 
 const _fileName = 'bible';
+Commentary? _commentary;
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=201';
-
-/// Exceptions to throw when parsing verses or VerseLike data
-class BibleLikeException implements Exception {
-  final String? msg;
-  final BibleLike caller;
-
-  const BibleLikeException(this.caller, [this.msg]);
-
-  @override
-  String toString() => msg ?? 'A bad path was sent to $caller';
-}
-
-class BadBiblePathException extends BibleLikeException {
-  BadBiblePathException(BibleLike caller, [String? msg]) : super(caller, msg);
-
-  @override
-  String toString() => msg ?? 'A bad path was sent to $caller';
-}
-
-class BookNotFoundException extends BibleLikeException {
-  BookNotFoundException(BibleLike caller, [String? msg]) : super(caller, msg);
-
-  @override
-  String toString() => msg ?? 'The book sent to $caller was not found';
-}
-
-class ChapterNotFoundException extends BibleLikeException {
-  ChapterNotFoundException(BibleLike caller, [String? msg])
-      : super(caller, msg);
-
-  @override
-  String toString() => msg ?? 'The chapter sent to $caller was not found';
-}
-
-class VerseNotFoundException extends BibleLikeException {
-  VerseNotFoundException(BibleLike caller, [String? msg]) : super(caller, msg);
-
-  @override
-  String toString() => msg ?? 'The verse sent to $caller was not found';
-}
 
 List<Verse> _parseVerses(String responseBody) {
   final parsed = jsonDecode(responseBody);
 
-  return parsed['REV_Bible']
-      .map<Verse>((json) => Verse.fromJson(json))
-      .toList();
+  return parsed['REV_Bible'].map<Verse>((json) {
+    var verse = Verse.fromJson(false, json);
+    if (_commentary!.contains(verse.path)) {
+      return Verse.fromJson(true, json);
+    } else {
+      return Verse.fromJson(false, json);
+    }
+  }).toList();
 }
 
 String _encodeVerses(List<Verse> verses) {
@@ -72,6 +40,8 @@ abstract class VerseLike {
   String get book;
   int get chapter;
   int get verse;
+
+  BiblePath get path => BiblePath(book, chapter, verse);
 }
 
 abstract class BibleLike {
@@ -278,36 +248,31 @@ class BiblePath {
 WordMap _words = {};
 
 class Bible extends BibleLike {
-  static List<Verse> _data = [];
+  static Bible? _instance;
+  final List<Verse> _data;
   List<Verse> get data => _data;
 
-  Bible() {
-    if (Bible._data.isEmpty) Bible.load;
-  }
+  Bible._(this._data);
 
-  static Future<Bible> get load async {
-    if (Bible._data.isNotEmpty) return Bible();
+  static Future<Bible> get load async => _instance ??= await _load;
+
+  static Future<Bible> get _load async {
+    _commentary ??= await Commentary.load;
     if (kIsWeb) {
-      try {
-        IdbFile file = const IdbFile(_fileName);
-        if (await file.exists()) {
-          String contents = await file.readAsString();
-          var verses = _parseVerses(contents);
-          Bible._data = verses;
-          return Bible();
-        } else {
-          return await Bible._fetch;
-        }
-      } catch (err) {
-        throw Exception("Error loading bible! $err");
+      IdbFile file = const IdbFile(_fileName);
+      if (await file.exists()) {
+        String contents = await file.readAsString();
+        var verses = _parseVerses(contents);
+        return Bible._(verses);
+      } else {
+        return await Bible._fetch;
       }
     } else {
       File file = await localFile(_fileName);
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseVerses(contents);
-        Bible._data = verses;
-        return Bible();
+        return Bible._(verses);
       } else {
         return await Bible._fetch;
       }
@@ -315,11 +280,12 @@ class Bible extends BibleLike {
   }
 
   static Future<Bible> get _fetch async {
+    _commentary ??= await Commentary.load;
     var response = await http.get(Uri.parse(_url));
-    Bible._data = await compute(_parseVerses, response.body);
-    var bible = Bible();
-    await bible.save();
-    return bible;
+    var verses = await compute(_parseVerses, response.body);
+    _instance = Bible._(verses);
+    await _instance!.save();
+    return _instance!;
   }
 
   static Future<Bible> get reload => Bible._fetch;

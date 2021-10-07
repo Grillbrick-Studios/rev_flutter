@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:rev_flutter/src/models/bible.dart';
-import 'package:rev_flutter/src/modules/nav_header.dart';
+import 'package:rev_flutter/src/pages/appendix_view.dart';
+import 'package:rev_flutter/src/pages/book_list.dart';
+import 'package:rev_flutter/src/pages/chapter_list.dart';
+import 'package:rev_flutter/src/pages/chapter_view.dart';
+import 'package:rev_flutter/src/pages/resource_list.dart';
+import 'package:rev_flutter/src/pages/verse_list.dart';
 import 'package:rev_flutter/src/settings/global_state.dart';
 import 'package:rev_flutter/src/settings/stored_state.dart';
 
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Loading Data...',
-        style: Theme.of(context).textTheme.headline1,
-      ),
-    );
-  }
-}
+import 'commentary_view.dart';
 
 /// The Home Page to display data.
 class Home extends StatelessWidget {
@@ -27,275 +18,21 @@ class Home extends StatelessWidget {
   /// A constructor that gets the global state.
   const Home({Key? key, required this.state}) : super(key: key);
 
-  /// A list of resources to be displayed as buttons
-  Widget getResources(BuildContext context) {
-    if (state.bible != null) {
-      return SingleChildScrollView(
-        child: Column(
-          children: [
-            NavHeader(state: state),
-            ...Resource.values
-                .map((e) => TextButton(
-                      onPressed: () => state.updateResource(e),
-                      child: Text(
-                        e.asString,
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
-                    ))
-                .toList(),
-            // This adds some scroll past stuff
-            const SizedBox(
-              width: 100,
-              height: 500,
-              child: null,
-            )
-          ],
-        ),
-      );
-    } else {
-      return const LoadingScreen();
-    }
-  }
-
-  /// A list of books to be displayed as buttons
-  Widget getBooks(BuildContext context) {
-    final BibleLike? resource;
-    switch (state.resource) {
-      case Resource.bible:
-        resource = state.bible;
-        break;
-      case Resource.commentary:
-        resource = state.commentary;
-        break;
-      case Resource.appendix:
-        resource = state.appendix;
-        break;
-      default:
-        resource = null;
-        break;
-    }
-    if (resource != null) {
-      return SingleChildScrollView(
-        child: Wrap(
-          spacing: 20,
-          runSpacing: 20,
-          children: <Widget>[NavHeader(state: state)] +
-              resource.listBooks.map((bookName) {
-                List<Widget> heading = [];
-                Widget btnWidget = TextButton(
-                  onPressed: () => state.updateBookName(bookName),
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
-                      shape: MaterialStateProperty.resolveWith((states) =>
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30))))),
-                  child: Text(
-                    bookName,
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                );
-                if (bookName.startsWith('Gen')) {
-                  heading.add(Row(children: [
-                    Text(
-                      'Old Testament',
-                      style: Theme.of(context).textTheme.headline2,
-                    )
-                  ]));
-                } else if (bookName.startsWith('Mat')) {
-                  heading.add(Row(
-                    children: [
-                      Text(
-                        'New Testament',
-                        style: Theme.of(context).textTheme.headline2,
-                      )
-                    ],
-                  ));
-                }
-                return [...heading, btnWidget];
-              }).reduce((value, element) {
-                value.addAll(element);
-                return value;
-              }) +
-              [
-                // This adds some scroll past stuff
-                const SizedBox(
-                  width: 100,
-                  height: 500,
-                  child: null,
-                )
-              ],
-        ),
-      );
-    } else {
-      return const LoadingScreen();
-    }
-  }
-
-  /// A list of chapters to be displayed as buttons
-  Widget getChapters(BuildContext context) {
-    final BibleLike? resource;
-    switch (state.resource) {
-      case Resource.bible:
-        resource = state.bible;
-        break;
-      case Resource.commentary:
-        resource = state.commentary;
-        break;
-      case Resource.appendix:
-        resource = state.appendix;
-        break;
-      default:
-        resource = null;
-        break;
-    }
-    if (resource != null) {
-      return SingleChildScrollView(
-        child: Wrap(
-          spacing: 20,
-          runSpacing: 20,
-          children: <Widget>[NavHeader(state: state)] +
-              resource.listChapters(state.path!).map((chapter) {
-                Widget btnWidget = TextButton(
-                  onPressed: () => state.updateChapter(chapter),
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
-                      shape: MaterialStateProperty.resolveWith((states) =>
-                          const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30))))),
-                  child: Text(
-                    chapter.toString(),
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                );
-                return btnWidget;
-              }).toList() +
-              [
-                // This adds some scroll past stuff
-                const SizedBox(
-                  width: 100,
-                  height: 500,
-                  child: null,
-                )
-              ],
-        ),
-      );
-    } else {
-      return const LoadingScreen();
-    }
-  }
-
-  /// A list of verses to be displayed as buttons
-  Widget getVerses(BuildContext context) {
-    final BibleLike? resource;
-    switch (state.resource) {
-      case Resource.bible:
-        resource = state.bible;
-        break;
-      case Resource.commentary:
-        resource = state.commentary;
-        break;
-      case Resource.appendix:
-        resource = state.appendix;
-        break;
-      default:
-        resource = null;
-        break;
-    }
-    if (resource == null) {
-      return const LoadingScreen();
-    }
-    return SingleChildScrollView(
-      child: Wrap(
-        spacing: 20,
-        runSpacing: 20,
-        children: <Widget>[NavHeader(state: state)] +
-            resource.listVerses(state.path!).map((verse) {
-              Widget btnWidget = TextButton(
-                onPressed: () => state.updateVerse(verse),
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.blue),
-                    shape: MaterialStateProperty.resolveWith((states) =>
-                        const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(30))))),
-                child: Text(
-                  verse.toString(),
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-              );
-              return btnWidget;
-            }).toList() +
-            [
-              // This adds some scroll past stuff
-              const SizedBox(
-                width: 100,
-                height: 500,
-                child: null,
-              )
-            ],
-      ),
-    );
-  }
-
-  /// Displays the chapter in an HTML view.
-  Widget getChapter(BuildContext context) {
-    final BibleLike? resource;
-    switch (state.resource) {
-      case Resource.bible:
-        resource = state.bible;
-        break;
-      case Resource.commentary:
-        resource = state.commentary;
-        break;
-      case Resource.appendix:
-        resource = state.appendix;
-        break;
-      default:
-        resource = null;
-        break;
-    }
-    if (resource == null) return const LoadingScreen();
-    final bible = state.bible!;
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      children: <Widget>[
-        NavHeader(state: state),
-        SingleChildScrollView(
-          child: Html(data: bible.getChapter(state.path!)),
-        ),
-        // This adds some scroll past stuff
-        const SizedBox(
-          width: 100,
-          height: 500,
-          child: null,
-        )
-      ],
-    );
-  }
-
+  /// Basic Widget override of build
   @override
   Widget build(BuildContext context) {
     return state.resource == null
-        ? getResources(context)
+        ? ResourceList(state: state)
         : state.book == null
-            ? getBooks(context)
+            ? BookList(state: state)
             : state.resource == Resource.appendix
-                ? getAppendix(context)
+                ? AppendixView(state: state)
                 : state.chapter == null
-                    ? getChapters(context)
+                    ? ChapterList(state: state)
                     : state.resource == Resource.bible
-                        ? getChapter(context)
+                        ? ChapterView(state: state)
                         : state.verse == null
-                            ? getVerses(context)
-                            : getVerses(context);
-  }
-
-  getAppendix(BuildContext context) {
-    if (state.appendix == null) return const LoadingScreen();
-    final appendix = state.appendix!;
-    return Html(data: appendix.getAppendix(state.book!));
+                            ? VerseList(state: state)
+                            : CommentaryView(state: state);
   }
 }

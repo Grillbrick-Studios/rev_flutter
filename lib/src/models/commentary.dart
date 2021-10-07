@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:rev_flutter/src/models/exceptions.dart';
+import 'package:synchronized/synchronized.dart';
 
 import 'bible.dart';
 import 'idb_file.dart';
@@ -17,7 +19,7 @@ WordMap _getWords(List<Comment> verses) {
   return verses.words;
 }
 
-class Comment implements VerseLike {
+class Comment extends VerseLike {
   @override
   late final String book;
   @override
@@ -52,60 +54,73 @@ class Comment implements VerseLike {
 }
 
 class Commentary extends BibleLike {
-  static List<Comment> _data = [];
+  static Commentary? _instance;
+  final List<Comment> _data;
   List<Comment> get data => _data;
 
-  Commentary() {
-    if (Commentary._data.isEmpty) Commentary.load;
+  Commentary._(this._data);
+
+  bool contains(BiblePath path) {
+    return _data
+        .where((element) =>
+            element.book == path.book &&
+            element.chapter == path.chapter &&
+            element.verse == path.verse)
+        .isNotEmpty;
   }
 
-  static Future<Commentary> get load async {
-    if (Commentary._data.isNotEmpty) return Commentary();
+  static Future<Commentary> get load async => _instance ??= await _load;
+
+  static Future<Commentary> get _load async {
+    if (_instance != null) return _instance!;
     if (kIsWeb) {
-      try {
-        IdbFile file = const IdbFile(_fileName);
-        if (await file.exists()) {
-          String contents = await file.readAsString();
-          var verses = _parseComments(contents);
-          Commentary._data = verses;
-          return Commentary();
-        } else {
-          return await Commentary._fetch;
-        }
-      } catch (err) {
-        throw Exception("Error loading commentary! $err");
+      IdbFile file = const IdbFile(_fileName);
+      if (await file.exists()) {
+        String contents = await file.readAsString();
+        var verses = _parseComments(contents);
+        return _instance = Commentary._(verses);
+      } else {
+        return _instance = await Commentary._fetch;
       }
     } else {
       File file = await localFile(_fileName);
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseComments(contents);
-        Commentary._data = verses;
-        return Commentary();
+        return _instance = Commentary._(verses);
       } else {
-        return await Commentary._fetch;
+        return _instance = await Commentary._fetch;
       }
     }
   }
 
   static Future<Commentary> get _fetch async {
-    var response = await http.get(Uri.parse(_url));
-    Commentary._data = await compute(_parseComments, response.body);
-    var commentary = Commentary();
-    await commentary.save();
-    return commentary;
+    if (_instance != null) return _instance!;
+    try {
+      var response = await http.get(Uri.parse(_url));
+      var verses = await compute(_parseComments, response.body);
+      _instance = Commentary._(verses);
+      await _instance!.save();
+      return _instance!;
+    } on Exception catch (err) {
+      throw FetchFileError(err);
+    }
   }
 
-  static Future<Commentary> get reload => Commentary._fetch;
+  static Future<Commentary> get reload async =>
+      _instance = await Commentary._fetch;
 
   Future save() async {
-    if (kIsWeb) {
-      IdbFile idbFile = const IdbFile(_fileName);
-      await idbFile.writeAsString(encoded);
-    } else {
-      File file = await localFile(_fileName);
-      await file.writeAsString(encoded);
-    }
+    var lock = Lock();
+    lock.synchronized(() async {
+      if (kIsWeb) {
+        IdbFile idbFile = const IdbFile(_fileName);
+        await idbFile.writeAsString(encoded);
+      } else {
+        File file = await localFile(_fileName);
+        await file.writeAsString(encoded);
+      }
+    });
   }
 
   String get encoded => _encodeComments(_data);

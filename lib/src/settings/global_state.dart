@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rev_flutter/src/models/appendices.dart';
-import 'package:rev_flutter/src/models/bible.dart';
-import 'package:rev_flutter/src/models/commentary.dart';
 
+import '../models/appendices.dart';
+import '../models/bible.dart';
+import '../models/commentary.dart';
 import 'stored_state.dart';
 
 /// A class that many Widgets can interact with to read user settings, update
@@ -34,11 +34,11 @@ class GlobalState with ChangeNotifier {
 
   // Make the bible data private so it is not updated directly without also
   // persisting the changes.
-  late Bible? _bible;
+  Bible? _bible;
 
-  late Appendices? _appendix;
+  Appendices? _appendix;
 
-  late Commentary? _commentary;
+  Commentary? _commentary;
 
   BiblePath? get path =>
       _book != null ? BiblePath(_book!, _chapter, _verse) : null;
@@ -86,24 +86,21 @@ class GlobalState with ChangeNotifier {
     _themeMode = await _store.themeMode;
     _textStyle = await _store.textStyle;
     _textSize = await _store.textSize;
-    // Load the bible data asynchronously
-    _bible = null;
-    _commentary = null;
-    _appendix = null;
     _resource = await _store.resource;
     _book = await _store.bookName;
     _chapter = await _store.chapter;
     _verse = await _store.verse;
-    Bible.load.then((b) {
-      _bible = b;
+    // Load the bible data asynchronously
+    Commentary.load.then((v) {
+      _commentary = v;
       notifyListeners();
     });
-    Appendices.load.then((a) {
-      _appendix = a;
+    Bible.load.then((value) {
+      _bible = value;
       notifyListeners();
     });
-    Commentary.load.then((c) {
-      _commentary = c;
+    Appendices.load.then((v) {
+      _appendix = v;
       notifyListeners();
     });
 

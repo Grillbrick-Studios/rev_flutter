@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import '../settings/global_state.dart';
 import '../settings/stored_state.dart';
 
+const tail = SizedBox(
+  width: 100,
+  height: 500,
+  child: null,
+);
+
 class NavHeader extends StatelessWidget {
   final GlobalState state;
 

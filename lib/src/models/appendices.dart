@@ -11,11 +11,11 @@ const _fileName = 'appendices';
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=203';
 
-class _Appendix implements VerseLike {
+class _Appendix extends VerseLike {
   final String title;
   final String appendix;
 
-  const _Appendix({
+  _Appendix({
     required this.title,
     required this.appendix,
   });
@@ -40,36 +40,30 @@ class _Appendix implements VerseLike {
 }
 
 class Appendices extends BibleLike {
-  static List<_Appendix> _data = [];
+  static Appendices? _instance;
+  final List<_Appendix> _data;
   List<_Appendix> get data => _data;
 
-  Appendices() {
-    if (Appendices._data.isEmpty) Appendices.load;
-  }
+  Appendices._(this._data);
+  static Future<Appendices> get load async => _instance ??= await _load;
 
-  static Future<Appendices> get load async {
-    if (Appendices._data.isNotEmpty) Appendices();
+  static Future<Appendices> get _load async {
+    if (_instance != null) return _instance!;
     if (kIsWeb) {
-      try {
-        IdbFile file = const IdbFile(_fileName);
-        if (await file.exists()) {
-          String contents = await file.readAsString();
-          var verses = _parseAppendix(contents);
-          _data = verses;
-          return Appendices();
-        } else {
-          return await Appendices._fetch;
-        }
-      } catch (err) {
-        throw Exception("Error loading appendix! $err");
+      IdbFile file = const IdbFile(_fileName);
+      if (await file.exists()) {
+        String contents = await file.readAsString();
+        var verses = _parseAppendix(contents);
+        return _instance = Appendices._(verses);
+      } else {
+        return await Appendices._fetch;
       }
     } else {
       File file = await localFile(_fileName);
       if (await file.exists()) {
         String contents = await file.readAsString();
         var verses = _parseAppendix(contents);
-        _data = verses;
-        return Appendices();
+        return _instance = Appendices._(verses);
       } else {
         return await Appendices._fetch;
       }
@@ -77,9 +71,10 @@ class Appendices extends BibleLike {
   }
 
   static Future<Appendices> get _fetch async {
+    if (_instance != null) return _instance!;
     var response = await http.get(Uri.parse(_url));
-    _data = await compute(_parseAppendix, response.body);
-    var bible = Appendices();
+    var verses = await compute(_parseAppendix, response.body);
+    var bible = _instance = Appendices._(verses);
     await bible.save();
     return bible;
   }

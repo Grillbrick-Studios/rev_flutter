@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:idb_shim/idb.dart';
 import 'package:idb_shim/idb_browser.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rev_flutter/src/models/exceptions.dart';
 
 Future<String> get localPath async {
   final directory = await getApplicationDocumentsDirectory();
@@ -33,7 +34,7 @@ class IdbFile {
   Future<Database> _openDb() async {
     final idbFactory = getIdbFactory();
     if (idbFactory == null) {
-      throw Exception('getIdbFactory() failed');
+      throw IdbFactoryError(Exception('getIdbFactory() returned null!'));
     }
     return idbFactory.open(
       _dbName,
@@ -53,26 +54,34 @@ class IdbFile {
   }
 
   Future<String> readAsString() async {
-    final db = await _openDb();
-    final txn = db.transaction(_objectStoreName, idbModeReadOnly);
-    final store = txn.objectStore(_objectStoreName);
-    final object = await store.getObject(_filePath) as Map?;
-    await txn.completed;
-    if (object == null) {
-      throw Exception('file not found: $_filePath');
+    try {
+      final db = await _openDb();
+      final txn = db.transaction(_objectStoreName, idbModeReadOnly);
+      final store = txn.objectStore(_objectStoreName);
+      final object = await store.getObject(_filePath) as Map?;
+      await txn.completed;
+      if (object == null) {
+        throw ReadFileError(Exception('file not found: $_filePath'));
+      }
+      return object['contents'] as String;
+    } on Exception catch (err) {
+      throw ReadFileError(err);
     }
-    return object['contents'] as String;
   }
 
   Future<void> writeAsString(String contents) async {
-    final db = await _openDb();
-    final txn = db.transaction(_objectStoreName, idbModeReadWrite);
-    final store = txn.objectStore(_objectStoreName);
-    await store.put({
-      _propNameFilePath: _filePath,
-      _propNameFileContents: contents
-    }); // if the file exists, it will be replaced.
-    await txn.completed;
+    try {
+      final db = await _openDb();
+      final txn = db.transaction(_objectStoreName, idbModeReadWrite);
+      final store = txn.objectStore(_objectStoreName);
+      await store.put({
+        _propNameFilePath: _filePath,
+        _propNameFileContents: contents
+      }); // if the file exists, it will be replaced.
+      await txn.completed;
+    } on Exception catch (err) {
+      throw WriteFileError(err);
+    }
   }
 
   Future<void> delete() async {
