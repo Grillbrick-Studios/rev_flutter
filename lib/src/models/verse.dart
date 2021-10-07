@@ -29,10 +29,10 @@ enum Style {
   @HiveField(6)
   listNoPostGap,
 // style: 8    This is list style with an extra linebreak before the verse.
-@HiveField(7)
+  @HiveField(7)
   listPreGap,
 // style: 9    This is list style with an extra linebreak before the verse and no vertical space after the verse.
-@HiveField(8)
+  @HiveField(8)
   listPreGapNoPostGap,
 }
 
