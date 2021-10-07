@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:rev_flutter/src/modules/nav_header.dart';
 import 'package:rev_flutter/src/settings/global_state.dart';
+
+import 'loading_screen.dart';
 
 class AppendixView extends StatelessWidget {
   static const routeName = '/resources/appendix';
@@ -9,10 +13,17 @@ class AppendixView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    //   if (state.appendix == null) return const LoadingScreen();
-    //   final appendix = state.appendix!;
-    //   return Html(data: appendix.getAppendix(state.book!));
-    throw UnimplementedError();
+    if (state.appendix == null) return LoadingScreen(state: state);
+    final appendix = state.appendix!;
+    return Wrap(
+      children: [
+        NavHeader(state: state),
+        SingleChildScrollView(
+          child: Html(
+            data: appendix.getAppendix(state.book!),
+          ),
+        )
+      ],
+    );
   }
 }

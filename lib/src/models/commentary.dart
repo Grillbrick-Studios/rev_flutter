@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/exceptions.dart';
-import 'package:synchronized/synchronized.dart';
 
 import 'bible.dart';
-import 'idb_file.dart';
 import 'words.dart';
+
+part 'commentary.g.dart';
 
 const _fileName = 'commentary';
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=202';
@@ -19,14 +19,26 @@ WordMap _getWords(List<Comment> verses) {
   return verses.words;
 }
 
+@HiveType(typeId: 4)
 class Comment extends VerseLike {
+  @HiveField(0)
   @override
   late final String book;
+  @HiveField(1)
   @override
   late final int chapter;
+  @HiveField(2)
   @override
   late final int verse;
+  @HiveField(3)
   late final String commentary;
+
+  Comment(
+    this.book,
+    this.chapter,
+    this.verse,
+    this.commentary,
+  );
 
   Comment.fromJson(Map<String, dynamic> json) {
     book = json['book'];
@@ -53,12 +65,16 @@ class Comment extends VerseLike {
       };
 }
 
+@HiveType(typeId: 5)
 class Commentary extends BibleLike {
   static Commentary? _instance;
+
+  @HiveField(0)
   final List<Comment> _data;
+
   List<Comment> get data => _data;
 
-  Commentary._(this._data);
+  Commentary(this._data);
 
   bool contains(BiblePath path) {
     return _data
@@ -73,24 +89,11 @@ class Commentary extends BibleLike {
 
   static Future<Commentary> get _load async {
     if (_instance != null) return _instance!;
-    if (kIsWeb) {
-      IdbFile file = const IdbFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseComments(contents);
-        return _instance = Commentary._(verses);
-      } else {
-        return _instance = await Commentary._fetch;
-      }
-    } else {
-      File file = await localFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseComments(contents);
-        return _instance = Commentary._(verses);
-      } else {
-        return _instance = await Commentary._fetch;
-      }
+    var box = await Hive.openBox<Commentary>(_fileName);
+    try {
+      return box.get(0) ?? await Commentary._fetch;
+    } on IndexError {
+      return await Commentary._fetch;
     }
   }
 
@@ -99,7 +102,7 @@ class Commentary extends BibleLike {
     try {
       var response = await http.get(Uri.parse(_url));
       var verses = await compute(_parseComments, response.body);
-      _instance = Commentary._(verses);
+      _instance = Commentary(verses);
       await _instance!.save();
       return _instance!;
     } on Exception catch (err) {
@@ -110,17 +113,10 @@ class Commentary extends BibleLike {
   static Future<Commentary> get reload async =>
       _instance = await Commentary._fetch;
 
+  @override
   Future save() async {
-    var lock = Lock();
-    lock.synchronized(() async {
-      if (kIsWeb) {
-        IdbFile idbFile = const IdbFile(_fileName);
-        await idbFile.writeAsString(encoded);
-      } else {
-        File file = await localFile(_fileName);
-        await file.writeAsString(encoded);
-      }
-    });
+    var box = await Hive.openBox<Commentary>(_fileName);
+    await box.put(0, this);
   }
 
   String get encoded => _encodeComments(_data);
@@ -191,12 +187,12 @@ class Commentary extends BibleLike {
     return shortList;
   }
 
-  String getCommentary(
-          {required String book, required int chapter, required int verse}) =>
-      _data
-          .firstWhere(
-              (v) => v.book == book && v.chapter == chapter && v.verse == verse)
-          .commentary;
+  String getCommentary(BiblePath path) => _data
+      .firstWhere((v) =>
+          v.book == path.book &&
+          v.chapter == path.chapter &&
+          v.verse == path.verse)
+      .commentary;
 }
 
 List<Comment> _parseComments(String responseBody) {

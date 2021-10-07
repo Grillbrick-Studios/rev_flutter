@@ -1,14 +1,15 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/commentary.dart';
 import 'package:rev_flutter/src/models/words.dart';
 
 import 'exceptions.dart';
-import 'idb_file.dart';
 import 'verse.dart';
+
+part 'bible.g.dart';
 
 const _fileName = 'bible';
 Commentary? _commentary;
@@ -20,7 +21,7 @@ List<Verse> _parseVerses(String responseBody) {
 
   return parsed['REV_Bible'].map<Verse>((json) {
     var verse = Verse.fromJson(false, json);
-    if (_commentary!.contains(verse.path)) {
+    if (_commentary?.contains(verse.path) ?? false) {
       return Verse.fromJson(true, json);
     } else {
       return Verse.fromJson(false, json);
@@ -36,16 +37,18 @@ WordMap _getWords(List<Verse> verses) {
   return verses.words;
 }
 
-abstract class VerseLike {
+abstract class VerseLike extends HiveObject {
   String get book;
+
   int get chapter;
+
   int get verse;
 
   BiblePath get path => BiblePath(book, chapter, verse);
 }
 
-abstract class BibleLike {
-  const BibleLike();
+abstract class BibleLike extends HiveObject {
+  BibleLike() : super();
 
   /// List all the books that this bible like object has.
   List<String> get listBooks;
@@ -247,35 +250,26 @@ class BiblePath {
 
 WordMap _words = {};
 
+@HiveType(typeId: 3)
 class Bible extends BibleLike {
   static Bible? _instance;
+
+  @HiveField(0)
   final List<Verse> _data;
+
   List<Verse> get data => _data;
 
-  Bible._(this._data);
+  Bible(this._data);
 
   static Future<Bible> get load async => _instance ??= await _load;
 
   static Future<Bible> get _load async {
     _commentary ??= await Commentary.load;
-    if (kIsWeb) {
-      IdbFile file = const IdbFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseVerses(contents);
-        return Bible._(verses);
-      } else {
-        return await Bible._fetch;
-      }
-    } else {
-      File file = await localFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseVerses(contents);
-        return Bible._(verses);
-      } else {
-        return await Bible._fetch;
-      }
+    var box = await Hive.openBox<Bible>(_fileName);
+    try {
+      return box.get(0) ?? await _fetch;
+    } on IndexError {
+      return await _fetch;
     }
   }
 
@@ -283,21 +277,17 @@ class Bible extends BibleLike {
     _commentary ??= await Commentary.load;
     var response = await http.get(Uri.parse(_url));
     var verses = await compute(_parseVerses, response.body);
-    _instance = Bible._(verses);
+    _instance = Bible(verses);
     await _instance!.save();
     return _instance!;
   }
 
   static Future<Bible> get reload => Bible._fetch;
 
+  @override
   Future save() async {
-    if (kIsWeb) {
-      IdbFile idbFile = const IdbFile(_fileName);
-      await idbFile.writeAsString(encoded);
-    } else {
-      File file = await localFile(_fileName);
-      await file.writeAsString(encoded);
-    }
+    var box = await Hive.openBox<Bible>(_fileName);
+    await box.put(0, this);
   }
 
   String get encoded => _encodeVerses(_data);

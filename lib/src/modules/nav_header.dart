@@ -29,7 +29,6 @@ class NavHeader extends StatelessWidget {
                       borderRadius: BorderRadius.all(Radius.circular(30))))),
           child: Text(
             state.resource!.asString,
-            style: Theme.of(context).textTheme.headline3,
           ),
         ),
       );
@@ -46,7 +45,6 @@ class NavHeader extends StatelessWidget {
                       borderRadius: BorderRadius.all(Radius.circular(30))))),
           child: Text(
             state.book.toString(),
-            style: Theme.of(context).textTheme.headline3,
           ),
         ),
       );
@@ -62,7 +60,6 @@ class NavHeader extends StatelessWidget {
                     borderRadius: BorderRadius.all(Radius.circular(30))))),
         child: Text(
           state.chapter.toString(),
-          style: Theme.of(context).textTheme.headline3,
         ),
       ));
     }
@@ -77,7 +74,6 @@ class NavHeader extends StatelessWidget {
                     borderRadius: BorderRadius.all(Radius.circular(30))))),
         child: Text(
           ':' + state.verse.toString(),
-          style: Theme.of(context).textTheme.headline3,
         ),
       ));
     }
