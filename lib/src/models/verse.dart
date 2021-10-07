@@ -23,10 +23,10 @@ enum Style {
   @HiveField(4)
   poetryPreGapNoPostGap,
 // style: 6    This is list style. It's similar to poetry... I can explain later if you want to go there.
-  @HiveField(5)
+@HiveField(5)
   list,
 // style: 7    This is list style with no small vertical space at the end of the verse.
-  @HiveField(6)
+@HiveField(6)
   listNoPostGap,
 // style: 8    This is list style with an extra linebreak before the verse.
 @HiveField(7)

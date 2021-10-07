@@ -505,7 +505,7 @@ class Bible extends BibleLike {
     WordMap shortList = {};
     words.forEach((word, pathSet) {
       if (pathSet.any((path) =>
-          book == null ||
+      book == null ||
           path.book == book && chapter == null ||
           path.book == book && path.chapter == chapter && verse == null ||
           path.book == book &&
