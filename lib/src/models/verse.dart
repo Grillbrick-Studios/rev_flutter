@@ -26,7 +26,7 @@ enum Style {
   @HiveField(5)
   list,
 // style: 7    This is list style with no small vertical space at the end of the verse.
-@HiveField(6)
+  @HiveField(6)
   listNoPostGap,
 // style: 8    This is list style with an extra linebreak before the verse.
 @HiveField(7)
