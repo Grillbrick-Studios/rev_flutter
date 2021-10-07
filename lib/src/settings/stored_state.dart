@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 import 'fonts.dart' as fonts;
 
+part 'stored_state.g.dart';
+
+class Boxes {
+  static const String appendices = 'appendices';
+  static const String bible = 'bible';
+  static const String commentary = 'commentary';
+  static const String preferences = 'preferences';
+}
+
 /// An enum for each Resource
+@HiveType(typeId: 7)
 enum Resource {
+  @HiveField(0)
   bible,
+  @HiveField(1)
   commentary,
+  @HiveField(2)
   appendix,
 }
 
@@ -85,23 +98,21 @@ extension Themeifier on String {
 /// you'd like to store settings on a web server, use the http package.
 class StoredState {
   /// Loads the User's preferred ThemeMode from local or remote storage.
-  Future get themeMode async {
+  ThemeMode get themeMode {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      var themeString =
-          preferences.getString('themeMode') ?? (ThemeMode.system.asString);
-      return (themeString.toThemeMode);
+      var preferences = Hive.box(Boxes.preferences);
+      var mode = preferences.get('themeMode') ?? (ThemeMode.system.asString);
+      return mode.toThemeMode();
     } catch (err) {
       return ThemeMode.system;
     }
   }
 
   /// Loads the User's preferred TextStyle from local or remote storage.
-  Future get textStyle async {
+  TextStyle get textStyle {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      var styleString =
-          preferences.getString('textStyle') ?? fonts.simpleDefault.toString();
+      var preferences = Hive.box(Boxes.preferences);
+      var styleString = preferences.get('textStyle') ?? fonts.simpleDefault;
       return fonts.SimpleFont.fromString(styleString).style;
     } catch (err) {
       return fonts.defaultFont;
@@ -109,134 +120,134 @@ class StoredState {
   }
 
   /// Loads the User's preferred TextSize from local or remote storage.
-  Future get textSize async {
+  double get textSize {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      return preferences.getDouble('textSize') ?? defaultTextSize;
+      var preferences = Hive.box(Boxes.preferences);
+      return preferences.get('textSize') ?? defaultTextSize;
     } catch (err) {
       return defaultTextSize;
     }
   }
 
-  Future get bookName async {
+  String? get bookName {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      return preferences.getString('book');
+      var preferences = Hive.box(Boxes.preferences);
+      return preferences.get('book');
     } catch (err) {
       return null;
     }
   }
 
-  Future get verse async {
+  int? get verse {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      return preferences.getInt('verse');
+      var preferences = Hive.box(Boxes.preferences);
+      return preferences.get('verse');
     } catch (err) {
       return null;
     }
   }
 
-  Future get chapter async {
+  int? get chapter {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      return preferences.getInt('chapter');
+      var preferences = Hive.box(Boxes.preferences);
+      return preferences.get('chapter');
     } catch (err) {
       return null;
     }
   }
 
   /// Loads the User's last used Resource if it exists.
-  Future get resource async {
+  Resource? get resource {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      return preferences.getInt('resource')?.toResource;
+      var preferences = Hive.box(Boxes.preferences);
+      return preferences.get('resource')?.toResource;
     } catch (err) {
       return null;
     }
   }
 
   /// Persists the user's preferred ThemeMode to local or remote storage.
-  Future updateThemeMode(ThemeMode theme) async {
+  updateThemeMode(ThemeMode theme) {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      preferences.setString('themeMode', theme.asString);
+      var preferences = Hive.box(Boxes.preferences);
+      preferences.put('themeMode', theme.asString);
     } catch (err) {
-      throw Exception("Error getting SharedPreferences: $err");
+      throw Exception("Error getting Hive.Box: $err");
     }
   }
 
-  Future updateResource(Resource? resource) async {
+  updateResource(Resource? resource) {
     try {
-      var preferences = await SharedPreferences.getInstance();
+      var preferences = Hive.box(Boxes.preferences);
       if (resource == null) {
-        preferences.remove('resource');
+        preferences.delete('resource');
       } else {
-        preferences.setInt('resource', resource.toInt);
+        preferences.put('resource', resource.toInt);
       }
     } catch (err) {
-      throw Exception("Error getting SharedPreferences: $err");
+      throw Exception("Error getting Hive.Box: $err");
     }
   }
 
   /// Persists the user's preferred TextStyle to local or remote storage.
-  Future updateTextStyle(TextStyle style) async {
+  updateTextStyle(TextStyle style) {
     try {
-      var preferences = await SharedPreferences.getInstance();
+      var preferences = Hive.box(Boxes.preferences);
       // get the simpleFont
       var simpleFont = fonts.allFonts.firstWhere((f) => f.style == style,
           orElse: () => fonts.simpleDefault);
-      preferences.setString('textStyle', simpleFont.toString());
+      preferences.put('textStyle', simpleFont.toString());
     } catch (err) {
-      throw Exception('Error getting SharedPreferences: $err');
+      throw Exception('Error getting Hive.Box: $err');
     }
   }
 
   /// Persists the user's preferred TextSize to local or remote storage.
-  Future updateTextSize(double size) async {
+  updateTextSize(double size) {
     try {
-      var preferences = await SharedPreferences.getInstance();
-      preferences.setDouble('textSize', size);
+      var preferences = Hive.box(Boxes.preferences);
+      preferences.put('textSize', size);
     } catch (err) {
-      throw Exception('Error getting SharedPreferences: $err');
+      throw Exception('Error getting Hive.Box: $err');
     }
   }
 
-  Future updateBookName(String? book) async {
+  updateBookName(String? book) {
     try {
-      var preferences = await SharedPreferences.getInstance();
+      var preferences = Hive.box(Boxes.preferences);
       if (book == null) {
-        preferences.remove('book');
+        preferences.delete('book');
       } else {
-        preferences.setString('book', book);
+        preferences.put('book', book);
       }
     } catch (err) {
-      throw Exception('Error getting SharedPreferences: $err');
+      throw Exception('Error getting Hive.Box: $err');
     }
   }
 
-  Future updateChapter(int? chapter) async {
+  updateChapter(int? chapter) {
     try {
-      var preferences = await SharedPreferences.getInstance();
+      var preferences = Hive.box(Boxes.preferences);
       if (chapter == null) {
-        preferences.remove('chapter');
+        preferences.delete('chapter');
       } else {
-        preferences.setInt('chapter', chapter);
+        preferences.put('chapter', chapter);
       }
     } catch (err) {
-      throw Exception('Error getting SharedPreferences: $err');
+      throw Exception('Error getting Hive.Box: $err');
     }
   }
 
-  Future updateVerse(int? verse) async {
+  updateVerse(int? verse) {
     try {
-      var preferences = await SharedPreferences.getInstance();
+      var preferences = Hive.box(Boxes.preferences);
       if (verse == null) {
-        preferences.remove('verse');
+        preferences.delete('verse');
       } else {
-        preferences.setInt('verse', verse);
+        preferences.put('verse', verse);
       }
     } catch (err) {
-      throw Exception('Error getting SharedPreferences: $err');
+      throw Exception('Error getting Hive.Box: $err');
     }
   }
 }

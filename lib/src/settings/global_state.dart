@@ -82,14 +82,14 @@ class GlobalState with ChangeNotifier {
   /// Load the user's settings from the SettingsService. It may load from a
   /// local database or the internet. The controller only knows it can load the
   /// settings from the service.
-  Future<void> loadSettings() async {
-    _themeMode = await _store.themeMode;
-    _textStyle = await _store.textStyle;
-    _textSize = await _store.textSize;
-    _resource = await _store.resource;
-    _book = await _store.bookName;
-    _chapter = await _store.chapter;
-    _verse = await _store.verse;
+  loadSettings() {
+    _themeMode = _store.themeMode;
+    _textStyle = _store.textStyle;
+    _textSize = _store.textSize;
+    _resource = _store.resource;
+    _book = _store.bookName;
+    _chapter = _store.chapter;
+    _verse = _store.verse;
     // Load the bible data asynchronously
     Commentary.load.then((v) {
       _commentary = v;
@@ -109,7 +109,7 @@ class GlobalState with ChangeNotifier {
   }
 
   /// Update and persist the textStyle
-  Future<void> updateTextStyle(TextStyle? newTextStyle) async {
+  updateTextStyle(TextStyle? newTextStyle) {
     if (newTextStyle == null) return;
 
     if (newTextStyle == _textStyle) return;
@@ -119,11 +119,11 @@ class GlobalState with ChangeNotifier {
     notifyListeners();
 
     // Persist data
-    await _store.updateTextStyle(newTextStyle);
+    _store.updateTextStyle(newTextStyle);
   }
 
   /// Update and persist the ThemeMode based on the user's selection.
-  Future<void> updateThemeMode(ThemeMode? newThemeMode) async {
+  updateThemeMode(ThemeMode? newThemeMode) {
     if (newThemeMode == null) return;
 
     // Do not perform any work if new and old ThemeMode are identical
@@ -137,11 +137,11 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _store.updateThemeMode(newThemeMode);
+    _store.updateThemeMode(newThemeMode);
   }
 
   /// Update and persist the Text Size based on the user's selection.
-  Future increaseTextSize([double amount = 2]) async {
+  increaseTextSize([double amount = 2]) {
     _textSize += amount;
 
     // Important! Inform listeners a change has occurred.
@@ -149,10 +149,10 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _store.updateTextSize(_textSize);
+    _store.updateTextSize(_textSize);
   }
 
-  Future decreaseTextSize([double amount = 2]) async {
+  decreaseTextSize([double amount = 2]) {
     _textSize -= amount;
 
     // Important! Inform listeners a change has occurred.
@@ -160,50 +160,50 @@ class GlobalState with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _store.updateTextSize(_textSize);
+    _store.updateTextSize(_textSize);
   }
 
-  Future resetTextSize() async {
+  resetTextSize() {
     _textSize = defaultTextSize;
   }
 
-  Future updateResource([Resource? resource]) async {
+  updateResource([Resource? resource]) {
     if (_resource == resource) return;
     _resource = resource;
     if (resource == null) {
-      await updateBookName();
-      await updateChapter();
-      await updateVerse();
+      updateBookName();
+      updateChapter();
+      updateVerse();
     }
     notifyListeners();
-    await _store.updateResource(resource);
+    _store.updateResource(resource);
   }
 
-  Future updateBookName([String? book]) async {
+  updateBookName([String? book]) {
     if (_book == book) return;
     _book = book;
     if (book == null) {
-      await updateChapter();
-      await updateVerse();
+      updateChapter();
+      updateVerse();
     }
     notifyListeners();
-    await _store.updateBookName(book);
+    _store.updateBookName(book);
   }
 
-  Future updateChapter([int? chapter]) async {
+  updateChapter([int? chapter]) {
     if (_chapter == chapter) return;
     _chapter = chapter;
     if (chapter == null) {
-      await updateVerse();
+      updateVerse();
     }
     notifyListeners();
-    await _store.updateChapter(chapter);
+    _store.updateChapter(chapter);
   }
 
-  Future updateVerse([int? verse]) async {
+  updateVerse([int? verse]) {
     if (_verse == verse) return;
     _verse = verse;
     notifyListeners();
-    await _store.updateVerse(verse);
+    _store.updateVerse(verse);
   }
 }

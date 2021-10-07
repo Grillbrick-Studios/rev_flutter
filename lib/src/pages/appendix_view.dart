@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:rev_flutter/src/modules/nav_header.dart';
-import 'package:rev_flutter/src/settings/global_state.dart';
 
+import '../modules/nav_header.dart';
+import '../settings/global_state.dart';
 import 'loading_screen.dart';
 
 class AppendixView extends StatelessWidget {
@@ -22,7 +22,8 @@ class AppendixView extends StatelessWidget {
           child: Html(
             data: appendix.getAppendix(state.book!),
           ),
-        )
+        ),
+        tail,
       ],
     );
   }

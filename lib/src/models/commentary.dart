@@ -89,7 +89,7 @@ class Commentary extends BibleLike {
 
   static Future<Commentary> get _load async {
     if (_instance != null) return _instance!;
-    var box = await Hive.openBox<Commentary>(_fileName);
+    var box = Hive.box<Commentary>(_fileName);
     try {
       return box.get(0) ?? await Commentary._fetch;
     } on IndexError {
@@ -115,7 +115,7 @@ class Commentary extends BibleLike {
 
   @override
   Future save() async {
-    var box = await Hive.openBox<Commentary>(_fileName);
+    var box = Hive.box<Commentary>(_fileName);
     await box.put(0, this);
   }
 
@@ -171,7 +171,7 @@ class Commentary extends BibleLike {
     WordMap shortList = {};
     words.forEach((word, pathSet) {
       if (pathSet.any((path) =>
-      book == null ||
+          book == null ||
           path.book == book && chapter == null ||
           path.book == book && path.chapter == chapter && verse == null ||
           path.book == book &&

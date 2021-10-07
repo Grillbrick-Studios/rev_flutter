@@ -4,10 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/bible.dart';
+import 'package:rev_flutter/src/settings/stored_state.dart';
 
 part 'appendices.g.dart';
-
-const _fileName = 'appendices';
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=203';
 
@@ -57,7 +56,7 @@ class Appendices extends BibleLike {
 
   static Future<Appendices> get _load async {
     if (_instance != null) return _instance!;
-    var box = await Hive.openBox<Appendices>(_fileName);
+    var box = Hive.box<Appendices>(Boxes.appendices);
     try {
       return box.get(0) ?? await _fetch;
     } on IndexError {
@@ -78,7 +77,7 @@ class Appendices extends BibleLike {
 
   @override
   Future save() async {
-    var box = await Hive.openBox<Appendices>(_fileName);
+    var box = Hive.box<Appendices>(Boxes.appendices);
     return await box.put(0, this);
   }
 
