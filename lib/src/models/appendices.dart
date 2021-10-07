@@ -1,18 +1,21 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/bible.dart';
 
-import 'idb_file.dart';
+part 'appendices.g.dart';
 
 const _fileName = 'appendices';
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=203';
 
+@HiveType(typeId: 1)
 class _Appendix extends VerseLike {
+  @HiveField(0)
   final String title;
+  @HiveField(1)
   final String appendix;
 
   _Appendix({
@@ -39,34 +42,26 @@ class _Appendix extends VerseLike {
   int get verse => 0;
 }
 
+@HiveType(typeId: 2)
 class Appendices extends BibleLike {
   static Appendices? _instance;
+
+  @HiveField(0)
   final List<_Appendix> _data;
+
   List<_Appendix> get data => _data;
 
-  Appendices._(this._data);
+  Appendices(this._data);
+
   static Future<Appendices> get load async => _instance ??= await _load;
 
   static Future<Appendices> get _load async {
     if (_instance != null) return _instance!;
-    if (kIsWeb) {
-      IdbFile file = const IdbFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseAppendix(contents);
-        return _instance = Appendices._(verses);
-      } else {
-        return await Appendices._fetch;
-      }
-    } else {
-      File file = await localFile(_fileName);
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        var verses = _parseAppendix(contents);
-        return _instance = Appendices._(verses);
-      } else {
-        return await Appendices._fetch;
-      }
+    var box = await Hive.openBox<Appendices>(_fileName);
+    try {
+      return box.get(0) ?? await _fetch;
+    } on IndexError {
+      return await _fetch;
     }
   }
 
@@ -74,21 +69,17 @@ class Appendices extends BibleLike {
     if (_instance != null) return _instance!;
     var response = await http.get(Uri.parse(_url));
     var verses = await compute(_parseAppendix, response.body);
-    var bible = _instance = Appendices._(verses);
+    var bible = _instance = Appendices(verses);
     await bible.save();
     return bible;
   }
 
   static Future<Appendices> get reload => Appendices._fetch;
 
+  @override
   Future save() async {
-    if (kIsWeb) {
-      IdbFile idbFile = const IdbFile(_fileName);
-      await idbFile.writeAsString(encoded);
-    } else {
-      File file = await localFile(_fileName);
-      await file.writeAsString(encoded);
-    }
+    var box = await Hive.openBox<Appendices>(_fileName);
+    return await box.put(0, this);
   }
 
   String get encoded => _encodeAppendix(_data);

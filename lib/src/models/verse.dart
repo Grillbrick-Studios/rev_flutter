@@ -1,25 +1,38 @@
+import 'package:hive/hive.dart';
 import 'package:rev_flutter/src/models/bible.dart';
 
 import 'words.dart';
 
+part 'verse.g.dart';
+
+@HiveType(typeId: 6)
 enum Style {
-  // style: 1    This is flowing text, or prose. See most verses in the NT.
+// style: 1    This is flowing text, or prose. See most verses in the NT.
+  @HiveField(0)
   prose,
-  // style: 2    This is poetry. See Psalms, Proverbs.
+// style: 2    This is poetry. See Psalms, Proverbs.
+  @HiveField(1)
   poetry,
-  // style: 3    This is poetry with no small vertical space at the end of the verse. See Ezra 2
+// style: 3    This is poetry with no small vertical space at the end of the verse. See Ezra 2
+  @HiveField(2)
   poetryNoPostGap,
-  // style: 4    This is poetry with an extra linebreak before the verse. See Judges 5:6.
+// style: 4    This is poetry with an extra linebreak before the verse. See Judges 5:6.
+  @HiveField(3)
   poetryPreGap,
-  // style: 5    This is poetry with an extra linebreak before the verse and no vertical space after the verse. See Ezra 2:36.
+// style: 5    This is poetry with an extra linebreak before the verse and no vertical space after the verse. See Ezra 2:36.
+@HiveField(4)
   poetryPreGapNoPostGap,
-  // style: 6    This is list style. It's similar to poetry... I can explain later if you want to go there.
+// style: 6    This is list style. It's similar to poetry... I can explain later if you want to go there.
+@HiveField(5)
   list,
-  // style: 7    This is list style with no small vertical space at the end of the verse.
+// style: 7    This is list style with no small vertical space at the end of the verse.
+@HiveField(6)
   listNoPostGap,
-  // style: 8    This is list style with an extra linebreak before the verse.
+// style: 8    This is list style with an extra linebreak before the verse.
+@HiveField(7)
   listPreGap,
-  // style: 9    This is list style with an extra linebreak before the verse and no vertical space after the verse.
+// style: 9    This is list style with an extra linebreak before the verse and no vertical space after the verse.
+@HiveField(8)
   listPreGapNoPostGap,
 }
 
@@ -131,19 +144,30 @@ extension EnumConverter on int {
   }
 }
 
+@HiveType(typeId: 0)
 class Verse extends VerseLike {
+  @HiveField(0)
   @override
   final String book;
+  @HiveField(1)
   @override
   final int chapter;
+  @HiveField(2)
   @override
   final int verse;
+  @HiveField(3)
   final String? heading;
+  @HiveField(4)
   final bool microheading;
+  @HiveField(5)
   final bool paragraph;
+  @HiveField(6)
   final Style style;
+  @HiveField(7)
   final String? footnotes;
+  @HiveField(8)
   final String versetext;
+  @HiveField(9)
   final bool hasCommentary;
 
   Verse({
