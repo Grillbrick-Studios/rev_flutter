@@ -53,12 +53,7 @@ class ChapterList extends StatelessWidget {
                 return btnWidget;
               }).toList() +
               [
-                // This adds some scroll past stuff
-                const SizedBox(
-                  width: 100,
-                  height: 500,
-                  child: null,
-                )
+                tail,
               ],
         ),
       );

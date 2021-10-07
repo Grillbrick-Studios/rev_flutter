@@ -223,10 +223,10 @@ class Verse extends VerseLike {
 
     // Generate a verse number link to commentary
     final commentaryLink = hasCommentary && linkCommentary
-        ? '<sup><a href=$verse/></sup>'
+        ? '<sup><a href=$verse>$verse</a></sup>'
         : '<sup>$verse</sup>';
 
-    return '$commentaryLink $versetext';
+    return linkCommentary ? '$commentaryLink $versetext' : versetext;
   }
 
   bool get isPoetry {

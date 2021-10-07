@@ -43,14 +43,17 @@ class ChapterView extends StatelessWidget {
       children: <Widget>[
         NavHeader(state: state),
         SingleChildScrollView(
-          child: Html(data: bible.getChapter(state.path!)),
+          child: Html(
+            data: bible.getChapter(state.path!),
+            onLinkTap: (src, context, map, element) {
+              if (src == null) return;
+              state.updateVerse(int.parse(src));
+              state.updateResource(Resource.commentary);
+            },
+          ),
         ),
         // This adds some scroll past stuff
-        const SizedBox(
-          width: 100,
-          height: 500,
-          child: null,
-        )
+        tail,
       ],
     );
   }
