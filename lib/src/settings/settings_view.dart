@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 import 'fonts.dart' as fonts;
-import 'global_state.dart';
 
 /// Displays a single setting in a row with a header and dropdown.
 class SettingsDropdown<T> extends StatelessWidget {
@@ -76,11 +76,9 @@ class SettingsButtons extends StatelessWidget {
 /// When a user changes a setting, the SettingsController is updated and
 /// Widgets that listen to the SettingsController are rebuilt.
 class SettingsView extends StatelessWidget {
-  const SettingsView({Key? key, required this.controller}) : super(key: key);
+  const SettingsView({Key? key}) : super(key: key);
 
   static const routeName = '/settings';
-
-  final GlobalState controller;
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +89,8 @@ class SettingsView extends StatelessWidget {
       children: [
         SettingsDropdown(
           'Color Theme',
-          onUpdate: controller.updateThemeMode,
-          value: controller.themeMode,
+          onUpdate: (dynamic mode) => Boxes.themeMode = mode,
+          value: Boxes.themeMode,
           options: const [
             DropdownMenuItem(
               value: ThemeMode.system,
@@ -110,8 +108,8 @@ class SettingsView extends StatelessWidget {
         ),
         SettingsDropdown<TextStyle>(
           'Text Font',
-          value: controller.textStyle,
-          onUpdate: controller.updateTextStyle,
+          value: Boxes.textStyle,
+          onUpdate: (dynamic style) => Boxes.textStyle = style,
           options: [
             DropdownMenuItem(
               child: Text(
@@ -172,12 +170,14 @@ Ultricies dui. Cras gravida rutrum massa. Donec accumsan mattis turpis. Quisque 
   }
 
   void _onIncreaseFontSize() {
-    controller.increaseTextSize();
+    Boxes.textSize += 0.2;
   }
 
   void _onDecreaseFontSize() {
-    controller.decreaseTextSize();
+    Boxes.textSize -= 0.2;
   }
 
-  void _onResetFontSize() {}
+  void _onResetFontSize() {
+    Boxes.textSize = defaultTextSize;
+  }
 }

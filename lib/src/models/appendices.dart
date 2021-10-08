@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/bible.dart';
-import 'package:rev_flutter/src/settings/stored_state.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 part 'appendices.g.dart';
 
@@ -43,8 +43,6 @@ class _Appendix extends VerseLike {
 
 @HiveType(typeId: 2)
 class Appendices extends BibleLike {
-  static Appendices? _instance;
-
   @HiveField(0)
   final List<_Appendix> _data;
 
@@ -52,33 +50,19 @@ class Appendices extends BibleLike {
 
   Appendices(this._data);
 
-  static Future<Appendices> get load async => _instance ??= await _load;
-
-  static Future<Appendices> get _load async {
-    if (_instance != null) return _instance!;
-    var box = Hive.box<Appendices>(Boxes.appendices);
-    try {
-      return box.get(0) ?? await _fetch;
-    } on IndexError {
-      return await _fetch;
-    }
-  }
+  static Future<Appendices> get load async => Boxes.appendices ??= await _fetch;
 
   static Future<Appendices> get _fetch async {
-    if (_instance != null) return _instance!;
     var response = await http.get(Uri.parse(_url));
     var verses = await compute(_parseAppendix, response.body);
-    var bible = _instance = Appendices(verses);
-    await bible.save();
-    return bible;
+    return Appendices(verses);
   }
 
-  static Future<Appendices> get reload => Appendices._fetch;
+  static Future<Appendices> get reload async => Boxes.appendices = await _fetch;
 
   @override
   Future save() async {
-    var box = Hive.box<Appendices>(Boxes.appendices);
-    return await box.put(0, this);
+    return Boxes.appendices = this;
   }
 
   String get encoded => _encodeAppendix(_data);

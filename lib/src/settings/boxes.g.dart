@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'stored_state.dart';
+part of 'boxes.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator

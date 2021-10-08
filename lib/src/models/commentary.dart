@@ -1,16 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/exceptions.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 import 'bible.dart';
 import 'words.dart';
 
 part 'commentary.g.dart';
 
-const _fileName = 'commentary';
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=202';
 
 WordMap _words = {};
@@ -67,8 +67,6 @@ class Comment extends VerseLike {
 
 @HiveType(typeId: 5)
 class Commentary extends BibleLike {
-  static Commentary? _instance;
-
   @HiveField(0)
   final List<Comment> _data;
 
@@ -85,39 +83,20 @@ class Commentary extends BibleLike {
         .isNotEmpty;
   }
 
-  static Future<Commentary> get load async => _instance ??= await _load;
-
-  static Future<Commentary> get _load async {
-    if (_instance != null) return _instance!;
-    var box = Hive.box<Commentary>(_fileName);
-    try {
-      return box.get(0) ?? await Commentary._fetch;
-    } on IndexError {
-      return await Commentary._fetch;
-    }
-  }
+  static Future<Commentary> get load async => Boxes.commentary ??= await _fetch;
 
   static Future<Commentary> get _fetch async {
-    if (_instance != null) return _instance!;
     try {
       var response = await http.get(Uri.parse(_url));
       var verses = await compute(_parseComments, response.body);
-      _instance = Commentary(verses);
-      await _instance!.save();
-      return _instance!;
+      return Commentary(verses);
     } on Exception catch (err) {
       throw FetchFileError(err);
     }
   }
 
   static Future<Commentary> get reload async =>
-      _instance = await Commentary._fetch;
-
-  @override
-  Future save() async {
-    var box = Hive.box<Commentary>(_fileName);
-    await box.put(0, this);
-  }
+      Boxes.commentary = await Commentary._fetch;
 
   String get encoded => _encodeComments(_data);
 

@@ -1,5 +1,6 @@
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:rev_flutter/src/models/bible.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 import 'words.dart';
 
@@ -168,7 +169,7 @@ class Verse extends VerseLike {
   @HiveField(8)
   final String versetext;
   @HiveField(9)
-  final bool hasCommentary;
+  bool get hasCommentary => Boxes.commentary?.contains(path) ?? false;
 
   Verse({
     required this.book,
@@ -180,10 +181,9 @@ class Verse extends VerseLike {
     required this.paragraph,
     required this.style,
     required this.versetext,
-    this.hasCommentary = false,
   });
 
-  Verse.fromJson(this.hasCommentary, Map<String, dynamic> json)
+  Verse.fromJson(Map<String, dynamic> json)
       : book = json['book'],
         chapter = json['chapter'],
         verse = json['verse'],
@@ -209,7 +209,7 @@ class Verse extends VerseLike {
   WordMap get words => Words.fromVerse(this);
 
   String get styledHeading {
-    if (this.heading == null) return '';
+    if (this.heading?.isEmpty ?? false) return '';
 
     final heading = this.heading!.replaceAll('[br]', '<br/>');
     return '<p class="${microheading ? 'microheading' : 'heading'}">$heading</p>';

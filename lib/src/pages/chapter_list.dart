@@ -2,29 +2,27 @@ import 'package:flutter/material.dart';
 
 import '../models/bible.dart';
 import '../modules/nav_header.dart';
-import '../settings/global_state.dart';
-import '../settings/stored_state.dart';
+import '../settings/boxes.dart';
 import 'loading_screen.dart';
 
 /// A list of chapters to be displayed as buttons
 class ChapterList extends StatelessWidget {
   static const routeName = '/chapters';
-  final GlobalState state;
 
-  const ChapterList({Key? key, required this.state}) : super(key: key);
+  const ChapterList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final BibleLike? resource;
-    switch (state.resource) {
+    switch (Boxes.resource) {
       case Resource.bible:
-        resource = state.bible;
+        resource = Boxes.bible;
         break;
       case Resource.commentary:
-        resource = state.commentary;
+        resource = Boxes.commentary;
         break;
       case Resource.appendix:
-        resource = state.appendix;
+        resource = Boxes.appendices;
         break;
       default:
         resource = null;
@@ -35,10 +33,10 @@ class ChapterList extends StatelessWidget {
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
-          children: <Widget>[NavHeader(state: state)] +
-              resource.listChapters(state.path!).map((chapter) {
+          children: <Widget>[const NavHeader()] +
+              resource.listChapters(Boxes.path!).map((chapter) {
                 Widget btnWidget = TextButton(
-                  onPressed: () => state.updateChapter(chapter),
+                  onPressed: () => Boxes.chapter = chapter,
                   style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.blue),
                       shape: MaterialStateProperty.resolveWith((states) =>
@@ -58,9 +56,7 @@ class ChapterList extends StatelessWidget {
         ),
       );
     } else {
-      return LoadingScreen(
-        state: state,
-      );
+      return const LoadingScreen();
     }
   }
 }

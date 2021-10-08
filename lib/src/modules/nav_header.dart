@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../settings/global_state.dart';
-import '../settings/stored_state.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 const tail = SizedBox(
   width: 100,
@@ -10,70 +8,68 @@ const tail = SizedBox(
 );
 
 class NavHeader extends StatelessWidget {
-  final GlobalState state;
-
-  const NavHeader({Key? key, required this.state}) : super(key: key);
+  const NavHeader({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var buttons = <TextButton>[];
 
-    if (state.resource != null) {
+    if (Boxes.resource != null) {
       buttons.add(
         TextButton(
-          onPressed: () => state.updateResource(),
+          onPressed: () => Boxes.resource = null,
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.red),
               shape: MaterialStateProperty.resolveWith((states) =>
                   const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(30))))),
           child: Text(
-            state.resource!.asString,
+            Boxes.resource!.asString,
           ),
         ),
       );
     }
 
-    if (state.book != null) {
+    if (Boxes.bookName != null) {
       buttons.add(
         TextButton(
-          onPressed: () => state.updateBookName(),
+          onPressed: () => Boxes.bookName = null,
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.red),
               shape: MaterialStateProperty.resolveWith((states) =>
                   const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(30))))),
           child: Text(
-            state.book.toString(),
+            Boxes.bookName.toString(),
           ),
         ),
       );
     }
 
-    if (state.chapter != null) {
+    if (Boxes.chapter != null) {
       buttons.add(TextButton(
-        onPressed: () => state.updateChapter(),
+        onPressed: () => Boxes.chapter = null,
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Colors.red),
             shape: MaterialStateProperty.resolveWith((states) =>
                 const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(30))))),
         child: Text(
-          state.chapter.toString(),
+          Boxes.chapter.toString(),
         ),
       ));
     }
 
-    if (state.verse != null) {
+    if (Boxes.verse != null) {
       buttons.add(TextButton(
-        onPressed: () => state.updateVerse(),
+        onPressed: () => Boxes.verse = null,
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Colors.red),
             shape: MaterialStateProperty.resolveWith((states) =>
                 const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(30))))),
         child: Text(
-          ':' + state.verse.toString(),
+          ':' + Boxes.verse.toString(),
         ),
       ));
     }

@@ -1,26 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 import '../modules/nav_header.dart';
-import '../settings/global_state.dart';
 import 'loading_screen.dart';
 
 class AppendixView extends StatelessWidget {
   static const routeName = '/resources/appendix';
-  final GlobalState state;
 
-  const AppendixView({Key? key, required this.state}) : super(key: key);
+  const AppendixView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (state.appendix == null) return LoadingScreen(state: state);
-    final appendix = state.appendix!;
+    if (Boxes.appendices == null) return const LoadingScreen();
+    final appendix = Boxes.appendices!;
     return Wrap(
       children: [
-        NavHeader(state: state),
+        const NavHeader(),
         SingleChildScrollView(
           child: Html(
-            data: appendix.getAppendix(state.book!),
+            data: appendix.getAppendix(Boxes.bookName!),
           ),
         ),
         tail,

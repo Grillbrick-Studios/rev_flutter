@@ -2,30 +2,28 @@ import 'package:flutter/material.dart';
 
 import '../models/bible.dart';
 import '../modules/nav_header.dart';
-import '../settings/global_state.dart';
-import '../settings/stored_state.dart';
+import '../settings/boxes.dart';
 import 'loading_screen.dart';
 
 /// A page to list the book names of any resource.
 /// A list of books to be displayed as buttons
 class BookList extends StatelessWidget {
   static const routeName = '/books';
-  final GlobalState state;
 
-  const BookList({Key? key, required this.state}) : super(key: key);
+  const BookList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final BibleLike? resource;
-    switch (state.resource) {
+    switch (Boxes.resource) {
       case Resource.bible:
-        resource = state.bible;
+        resource = Boxes.bible;
         break;
       case Resource.commentary:
-        resource = state.commentary;
+        resource = Boxes.commentary;
         break;
       case Resource.appendix:
-        resource = state.appendix;
+        resource = Boxes.appendices;
         break;
       default:
         resource = null;
@@ -36,11 +34,11 @@ class BookList extends StatelessWidget {
         child: Wrap(
           spacing: 20,
           runSpacing: 20,
-          children: <Widget>[NavHeader(state: state)] +
+          children: <Widget>[const NavHeader()] +
               resource.listBooks.map((bookName) {
                 List<Widget> heading = [];
                 Widget btnWidget = TextButton(
-                  onPressed: () => state.updateBookName(bookName),
+                  onPressed: () => Boxes.bookName = bookName,
                   style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.blue),
                       shape: MaterialStateProperty.resolveWith((states) =>
@@ -81,9 +79,7 @@ class BookList extends StatelessWidget {
         ),
       );
     } else {
-      return LoadingScreen(
-        state: state,
-      );
+      return const LoadingScreen();
     }
   }
 }

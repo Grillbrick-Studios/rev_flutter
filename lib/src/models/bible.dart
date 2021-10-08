@@ -1,18 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:rev_flutter/src/models/commentary.dart';
 import 'package:rev_flutter/src/models/words.dart';
+import 'package:rev_flutter/src/settings/boxes.dart';
 
 import 'exceptions.dart';
 import 'verse.dart';
 
 part 'bible.g.dart';
-
-const _fileName = 'bible';
-Commentary? _commentary;
 
 const _url = 'https://www.revisedenglishversion.com/jsondload.php?fil=201';
 
@@ -20,12 +18,7 @@ List<Verse> _parseVerses(String responseBody) {
   final parsed = jsonDecode(responseBody);
 
   return parsed['REV_Bible'].map<Verse>((json) {
-    var verse = Verse.fromJson(false, json);
-    if (_commentary?.contains(verse.path) ?? false) {
-      return Verse.fromJson(true, json);
-    } else {
-      return Verse.fromJson(false, json);
-    }
+    return Verse.fromJson(json);
   }).toList();
 }
 
@@ -252,8 +245,6 @@ WordMap _words = {};
 
 @HiveType(typeId: 3)
 class Bible extends BibleLike {
-  static Bible? _instance;
-
   @HiveField(0)
   final List<Verse> _data;
 
@@ -261,34 +252,16 @@ class Bible extends BibleLike {
 
   Bible(this._data);
 
-  static Future<Bible> get load async => _instance ??= await _load;
-
-  static Future<Bible> get _load async {
-    _commentary ??= await Commentary.load;
-    var box = Hive.box<Bible>(_fileName);
-    try {
-      return box.get(0) ?? await _fetch;
-    } on IndexError {
-      return await _fetch;
-    }
-  }
+  static Future<Bible> get load async => Boxes.bible ??= await _fetch;
 
   static Future<Bible> get _fetch async {
-    _commentary ??= await Commentary.load;
+    Boxes.commentary ??= await Commentary.load;
     var response = await http.get(Uri.parse(_url));
     var verses = await compute(_parseVerses, response.body);
-    _instance = Bible(verses);
-    await _instance!.save();
-    return _instance!;
+    return Bible(verses);
   }
 
   static Future<Bible> get reload => Bible._fetch;
-
-  @override
-  Future save() async {
-    var box = Hive.box<Bible>(_fileName);
-    await box.put(0, this);
-  }
 
   String get encoded => _encodeVerses(_data);
 
@@ -332,7 +305,7 @@ class Bible extends BibleLike {
       // Get the previous verse
       final pv = verses[i > 0 ? i - 1 : i];
       // check for a style change
-      var styleChange = pv.style == v.style ||
+      var styleChange = pv.style != v.style ||
           verse.contains(RegExp(
               r'(\[hpbegin\])|(\[hpend\])|(\[listbegin\])|(\[listend\])'));
       // if there is no [mvh] tag but there is a heading - note we need to add

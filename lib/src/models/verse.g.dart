@@ -26,7 +26,6 @@ class VerseAdapter extends TypeAdapter<Verse> {
       paragraph: fields[5] as bool,
       style: fields[6] as Style,
       versetext: fields[8] as String,
-      hasCommentary: fields[9] as bool,
     );
   }
 
