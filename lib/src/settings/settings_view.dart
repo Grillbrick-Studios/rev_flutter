@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:rev_flutter/src/settings/boxes.dart';
 
 import 'fonts.dart' as fonts;
@@ -83,102 +82,100 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(valueListenable: Boxes.preferenceBox
-        .listenable(), builder: (context, box, child) {
     return SingleChildScrollView(
-        child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SettingsDropdown(
-          'Color Theme',
-          onUpdate: (dynamic mode) => Boxes.themeMode = mode,
-          value: Boxes.themeMode,
-          options: const [
-            DropdownMenuItem(
-              value: ThemeMode.system,
-              child: Text('System Theme'),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.light,
-              child: Text('Light Theme'),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.dark,
-              child: Text('Dark Theme'),
-            ),
-          ],
-        ),
-        SettingsDropdown<TextStyle>(
-          'Text Font',
-          value: Boxes.textStyle,
-          onUpdate: (dynamic style) => Boxes.textStyle = style,
-          options: [
-            DropdownMenuItem(
-              child: Text(
-                'Serifed Fonts',
-                style: fonts.lightFont,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SettingsDropdown(
+            'Color Theme',
+            onUpdate: (dynamic mode) => Boxes.themeMode = mode,
+            value: Boxes.themeMode,
+            options: const [
+              DropdownMenuItem(
+                value: ThemeMode.system,
+                child: Text('System Theme'),
               ),
-              enabled: false,
-            ),
-            ...fonts.serifFonts.map((font) => DropdownMenuItem(
-                  value: font.style,
-                  child: Text(
-                    font.label,
-                    style: font.style,
-                  ),
-                )),
-            DropdownMenuItem(
-              child: Text(
-                'Non-Serifed Fonts',
-                style: fonts.lightFont,
+              DropdownMenuItem(
+                value: ThemeMode.light,
+                child: Text('Light Theme'),
               ),
-              enabled: false,
-            ),
-            ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
-                  value: font.style,
-                  child: Text(
-                    font.label,
-                    style: font.style,
-                  ),
-                )),
-            DropdownMenuItem(
-              child: Text(
-                'Fancy Fonts',
-                style: fonts.lightFont,
+              DropdownMenuItem(
+                value: ThemeMode.dark,
+                child: Text('Dark Theme'),
               ),
-              enabled: false,
-            ),
-            ...fonts.fancyFonts.map((font) => DropdownMenuItem(
-                  value: font.style,
-                  child: Text(
-                    font.label,
-                    style: font.style,
-                  ),
-                )),
-          ],
-        ),
-        SettingsButtons(
-          title: 'Font Size',
-          onIncrease: _onIncreaseFontSize,
-          onDecrease: _onDecreaseFontSize,
-          onReset: _onResetFontSize,
-        ),
-        const Text('''
+            ],
+          ),
+          SettingsDropdown<TextStyle>(
+            'Text Font',
+            value: Boxes.textStyle,
+            onUpdate: (dynamic style) => Boxes.textStyle = style,
+            options: [
+              DropdownMenuItem(
+                child: Text(
+                  'Serifed Fonts',
+                  style: fonts.lightFont,
+                ),
+                enabled: false,
+              ),
+              ...fonts.serifFonts.map((font) => DropdownMenuItem(
+                    value: font.style,
+                    child: Text(
+                      font.label,
+                      style: font.style,
+                    ),
+                  )),
+              DropdownMenuItem(
+                child: Text(
+                  'Non-Serifed Fonts',
+                  style: fonts.lightFont,
+                ),
+                enabled: false,
+              ),
+              ...fonts.nonSerifFonts.map((font) => DropdownMenuItem(
+                    value: font.style,
+                    child: Text(
+                      font.label,
+                      style: font.style,
+                    ),
+                  )),
+              DropdownMenuItem(
+                child: Text(
+                  'Fancy Fonts',
+                  style: fonts.lightFont,
+                ),
+                enabled: false,
+              ),
+              ...fonts.fancyFonts.map((font) => DropdownMenuItem(
+                    value: font.style,
+                    child: Text(
+                      font.label,
+                      style: font.style,
+                    ),
+                  )),
+            ],
+          ),
+          SettingsButtons(
+            title: 'Font Size',
+            onIncrease: _onIncreaseFontSize,
+            onDecrease: _onDecreaseFontSize,
+            onReset: _onResetFontSize,
+          ),
+          const Text('''
               This is a bunch of text to get a feel for the selected font.
 Ultricies dui. Crass gravid rostrum mass. Done accompany mattes turps. Quisque sem. Quisque elementum sapien iaculis augue. In dui sem, congue sit amet, feugiat quis, lobortis at, eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum vehicula purus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean risus dui, volutpat non, posuere vitae, sollicitudin in, urna. Nam eget eros a enim pulvinar rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla facilisis massa ut massa. Sed nisi purus, malesuada eu, porta vulputate, suscipit auctor, nunc. Vestibulum convallis, augue eu luctus.
             ''')
-      ],
-    ));
-    });
+        ],
+      ),
+    );
   }
 
   void _onIncreaseFontSize() {
-    Boxes.textSize += 0.2;
+    Boxes.textSize += 0.5;
   }
 
   void _onDecreaseFontSize() {
-    Boxes.textSize -= 0.2;
+    Boxes.textSize -= 0.5;
   }
 
   void _onResetFontSize() {

@@ -24,11 +24,11 @@ extension ResourceString on Resource {
   String get asString {
     switch (this) {
       case Resource.bible:
-        return 'bible';
+        return 'Bible';
       case Resource.commentary:
-        return 'commentary';
+        return 'Commentary';
       case Resource.appendix:
-        return 'appendix';
+        return 'Appendix';
     }
   }
 }
@@ -40,11 +40,11 @@ extension Stringifier on ThemeMode {
   String get asString {
     switch (this) {
       case ThemeMode.dark:
-        return 'dark';
+        return 'Dark';
       case ThemeMode.light:
-        return 'light';
+        return 'Light';
       case ThemeMode.system:
-        return 'system';
+        return 'System';
     }
   }
 }
@@ -52,11 +52,11 @@ extension Stringifier on ThemeMode {
 /// Decode a theme from a string.
 ThemeMode themeModeFromString(String s) {
   switch (s) {
-    case 'dark':
+    case 'Dark':
       return ThemeMode.dark;
-    case 'light':
+    case 'Light':
       return ThemeMode.light;
-    case 'system':
+    case 'System':
     default:
       return ThemeMode.system;
   }
@@ -65,10 +65,13 @@ ThemeMode themeModeFromString(String s) {
 extension Themeifier on String {
   ThemeMode get toThemeMode {
     switch (this) {
+      case 'Dark':
       case 'dark':
         return ThemeMode.dark;
+      case 'Light':
       case 'light':
         return ThemeMode.light;
+      case 'System':
       case 'system':
       default:
         return ThemeMode.system;
