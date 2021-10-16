@@ -12,18 +12,22 @@ class CommentaryView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (Boxes.commentary == null) return const LoadingScreen();
     var commentary = Boxes.commentary!;
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      children: <Widget>[
+    return Column(
+      children: [
         const NavHeader(),
-        SingleChildScrollView(
-          child: Html(
-            data: commentary.getCommentary(Boxes.path!),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Html(
+                  data: commentary.getCommentary(Boxes.path!),
+                ),
+                // This adds some scroll past stuff
+                tail,
+              ],
+            ),
           ),
         ),
-        // This adds some scroll past stuff
-        tail,
       ],
     );
   }
