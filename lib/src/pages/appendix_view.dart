@@ -14,15 +14,21 @@ class AppendixView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (Boxes.appendices == null) return const LoadingScreen();
     final appendix = Boxes.appendices!;
-    return Wrap(
+    return Column(
       children: [
         const NavHeader(),
-        SingleChildScrollView(
-          child: Html(
-            data: appendix.getAppendix(Boxes.bookName!),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Html(
+                  data: appendix.getAppendix(Boxes.bookName!),
+                ),
+                tail,
+              ],
+            ),
           ),
         ),
-        tail,
       ],
     );
   }
