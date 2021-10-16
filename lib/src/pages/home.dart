@@ -23,9 +23,9 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
         valueListenable: Boxes.preferenceBox.listenable(),
-        builder: (context, box, child) {
+        builder: (context, Box box, child) {
           final ValueListenable? listenable;
-          switch (Boxes.resource) {
+          switch (box.get('resource')) {
             case Resource.bible:
               listenable = Boxes.bibleBox.listenable();
               break;
